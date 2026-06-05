@@ -134,3 +134,50 @@
 .input-error { font-size: var(--text-sm); color: var(--color-error); display: none; }
 .input-field.invalid + .input-error,
 .input-group.show-error .input-error { display: block; }
+
+/* ── Demo / kitchen-sink layout ── */
+.demo-section {
+  margin-top: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+.demo-heading {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: var(--space-md);
+}
+.demo-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+.demo-group h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  font-size: var(--text-sm);
+}
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+.demo-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-width: 400px;
+}
+.card-row {
+  align-items: stretch;
+}
+.card-row .card {
+  flex: 1;
+  min-width: 200px;
+}

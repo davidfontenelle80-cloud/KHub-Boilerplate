@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="KHub App" />
+  <meta name="description" content="KHub Boilerplate — reusable vanilla PWA starter" />
   <meta name="theme-color" content="#1a73e8" />
 
   <!-- PWA -->
@@ -20,48 +20,120 @@
 </head>
 <body>
 
-  <!-- Skip nav for accessibility -->
+  <!-- Skip link (WCAG 2.2 — keyboard/screen reader) -->
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <!-- App header -->
   <header class="app-header" role="banner">
     <h1 class="app-title">KHub App</h1>
     <div class="header-controls">
-      <button id="lang-toggle" class="btn btn-icon" aria-label="Toggle language">EN</button>
-      <button id="theme-toggle" class="btn btn-icon" aria-label="Toggle dark mode">🌙</button>
+      <!-- Language toggle -->
+      <button id="lang-toggle"
+              class="btn btn-icon"
+              aria-label="Switch to Spanish"
+              aria-live="polite">EN</button>
+      <!-- Dark mode toggle -->
+      <button id="theme-toggle"
+              class="btn btn-icon"
+              aria-label="Switch to dark mode">🌙</button>
     </div>
   </header>
 
-  <!-- Error boundary display (hidden by default) -->
-  <div id="error-boundary" class="error-boundary" role="alert" aria-live="assertive" hidden>
+  <!-- Update notice (shown by SW when new version is waiting) -->
+  <div id="update-notice"
+       class="update-notice"
+       role="status"
+       aria-live="polite"
+       aria-atomic="true"
+       hidden>
+    <span data-i18n="updateAvailable">Update available —</span>
+    <button class="btn btn-sm btn-secondary"
+            onclick="KHub.SW.applyUpdate()"
+            data-i18n="refresh">Refresh</button>
+  </div>
+
+  <!-- Error boundary (shown on uncaught errors) -->
+  <div id="error-boundary"
+       class="error-boundary"
+       role="alert"
+       aria-live="assertive"
+       aria-atomic="true"
+       tabindex="-1"
+       hidden>
+    <strong data-i18n="errorTitle">Something went wrong</strong>
     <p id="error-message"></p>
-    <button class="btn btn-primary" onclick="KHub.ErrorBoundary.dismiss()">Dismiss</button>
+    <button class="btn btn-sm btn-danger"
+            onclick="KHub.ErrorBoundary.dismiss()"
+            data-i18n="dismiss">Dismiss</button>
   </div>
 
-  <!-- Update notice (shown by service worker) -->
-  <div id="update-notice" class="update-notice" role="status" aria-live="polite" hidden>
-    <span data-i18n="updateAvailable">Update available</span>
-    <button class="btn btn-sm" onclick="KHub.SW.applyUpdate()">Refresh</button>
-  </div>
+  <!-- Main content -->
+  <main id="main-content" class="app-main" role="main" aria-label="Main content">
 
-  <!-- Main content area -->
-  <main id="main-content" class="app-main" role="main">
-    <div id="app-view" class="app-view">
-      <!-- Views injected here by router -->
-      <section class="welcome-screen">
-        <h2 data-i18n="welcome">Welcome to KHub</h2>
-        <p data-i18n="welcomeSub">Your app starts here.</p>
-        <button class="btn btn-primary" data-i18n="getStarted">Get Started</button>
-      </section>
-    </div>
+    <!-- ── Welcome / hero ── -->
+    <section class="welcome-screen" aria-labelledby="welcome-heading">
+      <h2 id="welcome-heading" data-i18n="welcome">Welcome to KHub</h2>
+      <p data-i18n="welcomeSub">Your app starts here.</p>
+      <button class="btn btn-primary"
+              id="demo-modal-btn"
+              data-i18n="getStarted"
+              aria-haspopup="dialog">Get Started</button>
+    </section>
+
+    <!-- ── Component library demo ── -->
+    <section class="demo-section" aria-labelledby="demo-heading">
+      <h2 id="demo-heading" class="demo-heading">Component Library</h2>
+
+      <!-- Buttons -->
+      <div class="demo-group" aria-labelledby="btn-demo-heading">
+        <h3 id="btn-demo-heading">Buttons</h3>
+        <div class="demo-row" role="list">
+          <button class="btn btn-primary"  role="listitem">Primary</button>
+          <button class="btn btn-secondary" role="listitem">Secondary</button>
+          <button class="btn btn-danger"   role="listitem">Danger</button>
+          <button class="btn btn-primary"  disabled role="listitem" aria-disabled="true">Disabled</button>
+          <button class="btn btn-sm btn-secondary" role="listitem">Small</button>
+        </div>
+      </div>
+
+      <!-- Cards (injected by app.js on DOMContentLoaded) -->
+      <div class="demo-group" aria-labelledby="card-demo-heading">
+        <h3 id="card-demo-heading">Cards</h3>
+        <div id="card-demo" class="demo-row card-row" aria-label="Card examples"></div>
+      </div>
+
+      <!-- Inputs (injected by app.js on DOMContentLoaded) -->
+      <div class="demo-group" aria-labelledby="input-demo-heading">
+        <h3 id="input-demo-heading">Inputs</h3>
+        <div id="input-demo" class="demo-column" aria-label="Input examples"></div>
+      </div>
+
+      <!-- Modal trigger -->
+      <div class="demo-group" aria-labelledby="modal-demo-heading">
+        <h3 id="modal-demo-heading">Modal</h3>
+        <button class="btn btn-secondary"
+                id="open-modal-btn"
+                aria-haspopup="dialog">Open demo modal</button>
+      </div>
+
+      <!-- Error boundary trigger (dev only) -->
+      <div class="demo-group" id="error-demo-group" aria-labelledby="error-demo-heading" hidden>
+        <h3 id="error-demo-heading">Error Boundary (dev only)</h3>
+        <button class="btn btn-danger" id="trigger-error-btn">Trigger test error</button>
+      </div>
+    </section>
+
   </main>
 
-  <!-- Bottom nav (optional — remove if this app has no tabs) -->
-  <nav class="bottom-nav" role="navigation" aria-label="Main navigation" hidden>
+  <!-- Bottom nav (hidden by default — show and populate when your app needs tabs) -->
+  <nav class="bottom-nav"
+       role="navigation"
+       aria-label="Main navigation"
+       hidden>
     <!-- Tabs injected by app.js -->
   </nav>
 
-  <!-- JS — load order matters: config → shared → features → bootstrap -->
+  <!-- JS — strict load order: config → i18n → theme → error → auth → components → app -->
   <script src="js/config.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/theme.js"></script>

@@ -179,3 +179,66 @@
 
   document.addEventListener('DOMContentLoaded', init);
 })();
+
+// ── Component demo wiring (remove in production apps) ─────
+document.addEventListener('DOMContentLoaded', () => {
+  // Cards
+  const cardContainer = document.getElementById('card-demo');
+  if (cardContainer) {
+    cardContainer.appendChild(KHub.Components.Card.create({
+      title: 'Basic Card',
+      body:  'This is a reusable card component. Drop any content here.',
+    }));
+    cardContainer.appendChild(KHub.Components.Card.create({
+      title:  'Card with Footer',
+      body:   'Cards support optional footer content.',
+      footer: '<button class="btn btn-sm btn-primary">Action</button>',
+    }));
+  }
+
+  // Inputs
+  const inputContainer = document.getElementById('input-demo');
+  if (inputContainer) {
+    inputContainer.appendChild(KHub.Components.Input.create({
+      id:          'demo-text',
+      label:       'Text input',
+      placeholder: 'Type something…',
+      hint:        'This is a helper hint.',
+    }));
+    inputContainer.appendChild(KHub.Components.Input.create({
+      id:       'demo-email',
+      label:    'Email (required)',
+      type:     'email',
+      required: true,
+      validate: v => v && !v.includes('@') ? 'Enter a valid email address.' : '',
+    }));
+    inputContainer.appendChild(KHub.Components.Input.create({
+      id:       'demo-password',
+      label:    'Password',
+      type:     'password',
+      required: true,
+      validate: v => v && v.length < 8 ? 'Password must be at least 8 characters.' : '',
+    }));
+  }
+
+  // Modal demo
+  const openBtn = document.getElementById('open-modal-btn');
+  const heroBtn = document.getElementById('demo-modal-btn');
+  const modalHandler = () => KHub.Components.Modal.open({
+    title:        'Demo Modal',
+    body:         '<p>This modal traps focus, closes on Escape, and returns focus on close.</p>',
+    confirmLabel: 'Got it',
+    cancelLabel:  'Close',
+    onConfirm:    () => console.log('[KHub] Modal confirmed.'),
+  });
+  openBtn?.addEventListener('click', modalHandler);
+  heroBtn?.addEventListener('click', modalHandler);
+
+  // Error boundary demo (dev only)
+  const errGroup = document.getElementById('error-demo-group');
+  if (errGroup && KHub.Config.isDev) {
+    errGroup.hidden = false;
+    document.getElementById('trigger-error-btn')
+      ?.addEventListener('click', () => { throw new Error('Test error from demo button.'); });
+  }
+});
