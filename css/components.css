@@ -181,3 +181,36 @@
   flex: 1;
   min-width: 200px;
 }
+
+/* ── Auth chip ── */
+.auth-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.auth-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+.auth-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Error boundary footer (retry + dismiss row) */
+.error-boundary-footer {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
