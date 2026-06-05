@@ -18,7 +18,7 @@
  * BUMP THIS VERSION STRING on every deploy so the cache key changes.
  */
 
-const CACHE_VERSION = 'khub-v2';
+const CACHE_VERSION = 'khub-v3';
 
 /**
  * All URLs that make up the app shell.
@@ -37,10 +37,12 @@ const PRECACHE_URLS = [
   './js/theme.js',
   './js/error-boundary.js',
   './js/auth.js',
+  './js/a11y.js',
   './js/components/button.js',
   './js/components/modal.js',
   './js/components/card.js',
   './js/components/input.js',
+  './js/perf.js',
   './js/app.js',
 ];
 
