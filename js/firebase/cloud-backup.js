@@ -3,7 +3,7 @@
  *
  * Saves selected localStorage keys to Firestore as:
  *   1. a per-device backup, and
- *   2. a shared latest backup for cross-device restore.
+ *   2. a shared latest device backup for cross-device restore.
  *
  * Requires Firebase compat SDK + a configured KHub.Firebase.db.
  */
@@ -23,7 +23,9 @@
 
   function appRef(appId) { return KHub.Firebase.db.collection('backups').doc(appId); }
   function deviceRef(appId) { return appRef(appId).collection('devices').doc(getDeviceId()); }
-  function latestRef(appId) { return appRef(appId).collection('shared').doc('latest'); }
+  function latestRef(appId) {
+    return appRef(appId).collection('devices').doc('latest');
+  }
   function markerKey(appId) { return 'khub-cloud-backup-' + appId; }
 
   function collectKeys(exactKeys, scanPrefix) {
