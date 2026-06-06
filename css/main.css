@@ -1,70 +1,125 @@
 /**
- * main.css — KHub Boilerplate
- * Root CSS variables, reset, base layout, typography.
- * Dark mode overrides live in dark-mode.css.
+ * main.css -- KHub Boilerplate
+ * House tokens: dark is the default (lives in :root).
+ * Light theme lives in [data-theme="light"].
+ * Single source of truth for all color, radius, spacing, shadow, motion.
  * Component styles live in components.css.
  * Breakpoints live in responsive.css.
  */
 
-/* ── CSS Variables (light theme defaults) ── */
+/* ── Dark tokens (default) ───────────────────────────────────── */
 :root {
   /* Brand */
-  --color-primary:       #1a73e8;
-  --color-primary-dark:  #1557b0;
-  --color-accent:        #fbbc04;
+  --color-primary:        #5be3a0;
+  --color-primary-dark:   #3fbf84;
+  --color-primary-strong: #74f0b6;
+  --color-accent:         #f4c152;
 
   /* Surface */
-  --color-bg:            #ffffff;
-  --color-surface:       #f8f9fa;
-  --color-border:        #dadce0;
+  --color-bg:             #0b0d12;
+  --color-surface:        #161a20;
+  --color-surface-2:      #1c212b;
+  --color-border:         rgba(255,255,255,0.07);
+  --color-overlay:         rgba(0,0,0,.55);
 
-  /* Text — WCAG 2.2: 4.5:1 min on --color-bg */
-  --color-text:          #202124;
-  --color-text-muted:    #5f6368;
-  --color-text-inverse:  #ffffff;
+  /* Text */
+  --color-text:           #f4f6f8;
+  --color-text-muted:     #8a93a2;
+  --color-text-dim:       #5c6675;
+  --color-text-inverse:   #07120c;
+  --color-on-primary:     #ffffff;
 
   /* Status */
-  --color-success:       #188038;
-  --color-warning:       #e37400;
-  --color-error:         #c5221f;
-  --color-info:          #1967d2;
+  --color-success:        #5be3a0;
+  --color-warning:        #f4c152;
+  --color-error:          #f2817f;
+  --color-info:           #7e9cff;
+  --color-special:        #a98cf5;
 
   /* Spacing */
-  --space-xs:  4px;
-  --space-sm:  8px;
-  --space-md:  16px;
-  --space-lg:  24px;
-  --space-xl:  40px;
+  --space-xs: 4px;  --space-sm: 8px;  --space-md: 16px;
+  --space-lg: 24px; --space-xl: 40px;
 
-  /* Radius */
-  --radius-sm:  4px;
-  --radius-md:  8px;
-  --radius-lg:  16px;
+  /* Radius -- no sharp corners; everything pulls from here */
+  --radius-sm:   10px;
+  --radius-md:   16px;
+  --radius-lg:   22px;
+  --radius-xl:   28px;
   --radius-full: 9999px;
 
   /* Typography */
-  --font-base:  'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono:  'Consolas', 'Courier New', monospace;
-  --text-sm:    0.875rem;
-  --text-base:  1rem;
-  --text-lg:    1.125rem;
-  --text-xl:    1.25rem;
-  --text-2xl:   1.5rem;
+  --font-base: -apple-system, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Menlo', 'Consolas', monospace;
+  --text-sm:   0.8125rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.375rem;
+  --text-2xl:  1.75rem;
+  --text-4xl:  3.25rem;
+  --label-spacing: 0.09em;
 
-  /* Shadow */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.12);
-  --shadow-md:  0 4px 12px rgba(0,0,0,.15);
+  /* Elevation + glow */
+  --shadow-sm:   0 1px 2px rgba(0,0,0,.45);
+  --shadow-md:   0 10px 30px rgba(0,0,0,.45);
+  --shadow-glow: 0 0 28px rgba(91,227,160,.40);
 
-  /* Transition */
-  --transition: 150ms ease;
+  /* Motion */
+  --transition:        180ms cubic-bezier(0.4,0,0.2,1);
+  --transition-spring: 320ms cubic-bezier(0.34,1.56,0.64,1);
 
   /* Layout */
   --header-height:     56px;
-  --bottom-nav-height: 56px;
-  --max-width:         800px;
+  --bottom-nav-height: 76px;
+  --max-width:         480px;
 }
 
-/* ── Reset ── */
+/* ── Light theme ─────────────────────────────────────────────── */
+[data-theme="light"] {
+  --color-primary:        #12a06a;
+  --color-primary-dark:   #0c7f53;
+  --color-primary-strong: #16b87a;
+  --color-accent:         #d99413;
+
+  --color-bg:             #eef1f5;
+  --color-surface:        #ffffff;
+  --color-surface-2:      #e9edf2;
+  --color-border:         rgba(16,24,40,0.10);
+  --color-overlay:         rgba(16,24,40,.45);
+
+  --color-text:           #161b22;
+  --color-text-muted:     #5c6675;
+  --color-text-dim:       #97a0ad;
+  --color-text-inverse:   #ffffff;
+
+  --color-success:        #12a06a;
+  --color-warning:        #d99413;
+  --color-error:          #e0524c;
+  --color-info:           #4f6bf0;
+  --color-special:        #7c5cf0;
+
+  --shadow-sm:   0 1px 2px rgba(16,24,40,.06), 0 2px 8px rgba(16,24,40,.07);
+  --shadow-md:   0 2px 6px rgba(16,24,40,.06), 0 18px 38px rgba(16,24,40,.16);
+  --shadow-glow: 0 12px 28px rgba(18,160,106,.42);
+}
+
+/* Light depth: cards lift, hero gets a soft green tint */
+[data-theme="light"] body {
+  background: linear-gradient(180deg,#f4f7fb 0%,#e7edf4 100%);
+}
+[data-theme="light"] .card {
+  box-shadow: var(--shadow-md);
+}
+[data-theme="light"] .card-hero {
+  background: linear-gradient(150deg,#ffffff 0%,#e9f8f1 100%);
+  border-color: rgba(18,160,106,.20);
+}
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .play,
+[data-theme="light"] .start-btn {
+  box-shadow: 0 12px 26px rgba(18,160,106,.40);
+}
+
+/* ── Reset ───────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
@@ -79,14 +134,14 @@ img, svg { display: block; max-width: 100%; }
 button { cursor: pointer; font: inherit; border: none; background: none; }
 a { color: var(--color-primary); text-decoration-skip-ink: auto; }
 
-/* ── Skip link (accessibility) ── */
+/* ── Skip link (accessibility) ───────────────────────────────── */
 .skip-link {
   position: absolute;
   top: -100%;
   left: var(--space-md);
   padding: var(--space-sm) var(--space-md);
   background: var(--color-primary);
-  color: var(--color-text-inverse);
+  color: var(--color-on-primary);
   border-radius: var(--radius-md);
   font-weight: 600;
   z-index: 9999;
@@ -94,18 +149,19 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
 }
 .skip-link:focus { top: var(--space-sm); }
 
-/* ── App shell layout ── */
+/* ── App shell layout ─────────────────────────────────────────── */
 .app-header {
   position: sticky;
   top: 0;
   height: var(--header-height);
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
+  background: var(--color-surface);
+  color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-md);
   z-index: 100;
+  border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
 }
 .app-title { font-size: var(--text-xl); font-weight: 700; }
@@ -133,7 +189,7 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
   z-index: 100;
 }
 
-/* ── Update notice ── */
+/* ── Update notice ───────────────────────────────────────────── */
 .update-notice {
   display: flex;
   align-items: center;
@@ -141,23 +197,23 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-md);
   background: var(--color-info);
-  color: var(--color-text-inverse);
+  color: var(--color-on-primary);
   font-size: var(--text-sm);
 }
 .update-notice[hidden] { display: none; }
 
-/* ── Error boundary ── */
+/* ── Error boundary ──────────────────────────────────────────── */
 .error-boundary {
   margin: var(--space-md);
   padding: var(--space-md);
-  background: #fce8e6;
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
   border: 1px solid var(--color-error);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   color: var(--color-error);
 }
 .error-boundary[hidden] { display: none; }
 
-/* ── Welcome screen ── */
+/* ── Welcome screen ──────────────────────────────────────────── */
 .welcome-screen {
   display: flex;
   flex-direction: column;
@@ -170,14 +226,14 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
 }
 .welcome-screen h2 { font-size: var(--text-2xl); }
 
-/* ── Focus visible (keyboard nav) ── */
+/* ── Focus visible (keyboard nav) ────────────────────────────── */
 :focus-visible {
-  outline: 3px solid var(--color-primary);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
-/* ── Screen reader only (visually hidden but announced) ── */
+/* ── Screen reader only ──────────────────────────────────────── */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -189,9 +245,7 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
   white-space: nowrap;
   border: 0;
 }
-/* Make .sr-only focusable when tabbed to */
 .sr-only-focusable:focus { all: revert; }
 
-/* ── Dynamic text sizing support ── */
-/* Base is set in px by a11y.js; all sizing uses rem so it scales */
-html { font-size: 16px; } /* default — overridden by a11y.js if user changed it */
+/* ── Dynamic text sizing ─────────────────────────────────────── */
+html { font-size: 16px; }

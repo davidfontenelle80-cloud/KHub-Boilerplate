@@ -242,3 +242,44 @@ document.addEventListener('DOMContentLoaded', () => {
       ?.addEventListener('click', () => { throw new Error('Test error from demo button.'); });
   }
 });
+
+
+// ── State export / import (pattern for apps that persist user data) ─────────
+// The boilerplate stores only UI preferences (theme, lang, SW check time).
+// Apps that store real user data should implement export and import functions
+// following this pattern so the ship check confirms data portability.
+(function () {
+  'use strict';
+
+  function exportState() {
+    // Replace with real app state keys when extending the boilerplate.
+    const data = {
+      theme: localStorage.getItem('khub_theme'),
+      lang:  localStorage.getItem('khub_lang'),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'khub-state.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function importState(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.theme) localStorage.setItem('khub_theme', data.theme);
+        if (data.lang)  localStorage.setItem('khub_lang',  data.lang);
+        location.reload();
+      } catch (err) {
+        window.KHub?.ErrorBoundary?.show('Import failed: invalid file.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  window.KHub = window.KHub || {};
+  window.KHub.State = { exportState, importState };
+})();
