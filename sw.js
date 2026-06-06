@@ -18,7 +18,7 @@
  * BUMP THIS VERSION STRING on every deploy that changes HTML, CSS, JS, manifest, or SW behavior.
  */
 
-const CACHE_VERSION = 'khub-v5-shortcut-refresh';
+const CACHE_VERSION = 'khub-boilerplate-v6-centered-shell';
 
 /**
  * All URLs that make up the app shell.
