@@ -179,6 +179,15 @@ config → i18n → theme → error-boundary → auth → a11y
 
 ---
 
+## Centered responsive shell
+
+The boilerplate must stay centered on every viewport: phone, tablet, laptop, and desktop.
+
+- `#main-content.app-main` uses `width: min(100%, var(--max-width))` and `margin: 0 auto`.
+- Generated apps that use an app root should wrap it in `main#main-content` and give `#app` `width: min(100%, 860px)` plus `margin-inline: auto`.
+- Do not ship literal generated line-break text like `` `n`` or `` `r`n`` in HTML.
+- IDs must be unique. Duplicate progress dots, tabs, modals, and inputs are a ship-check failure.
+- CSS load order is `dark-mode.css`, `components.css`, `responsive.css`, then the app CSS.
 ## Service worker update flow
 
 ```
