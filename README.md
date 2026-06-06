@@ -20,7 +20,8 @@
 | Accessibility (WCAG 2.2 AA) | `js/a11y.js`, ARIA in `index.html` |
 | Error boundary | `js/error-boundary.js` |
 | Reusable auth pattern | `js/auth.js` |
-| Firebase folder (inactive) | `firebase/` |`r`n| Optional shared cloud backup/sync | `js/firebase/cloud-backup.js` |
+| Firebase folder (inactive) | `firebase/` |
+| Optional shared cloud backup/sync | `js/firebase/cloud-backup.js` |
 | Dev/prod environment config | `js/config.js`, `.env.dev`, `.env.prod` |
 | ESLint + Prettier | `.eslintrc.json`, `.prettierrc` |
 | Component library | `js/components/`, `css/components.css` |
@@ -143,7 +144,8 @@ config → i18n → theme → error-boundary → auth → a11y
 | `KHub.Theme` | `toggle()`, `apply(theme)`, `reset()` |
 | `KHub.A11y` | `announce()`, `focusMain()`, `addShortcut()`, font sizing |
 | `KHub.ErrorBoundary` | `show(msg, retryFn?)`, `dismiss()` |
-| `KHub.Auth` | `signIn()`, `signOut()`, `renderControls()`, `onAuthChange()` |`r`n| `KHub.CloudBackup` | `save()`, `restore()`, `restoreLatestIfNewer()`, `autoSave()` |
+| `KHub.Auth` | `signIn()`, `signOut()`, `renderControls()`, `onAuthChange()` |
+| `KHub.CloudBackup` | `save()`, `restore()`, `restoreLatestIfNewer()`, `autoSave()` |
 | `KHub.Components.Button` | `create({label, variant, onClick})` |
 | `KHub.Components.Modal` | `open({title, body, onConfirm})`, `close()` |
 | `KHub.Components.Card` | `create({title, body, footer})` |
@@ -185,7 +187,8 @@ The boilerplate must stay centered on every viewport: phone, tablet, laptop, and
 
 - `#main-content.app-main` uses `width: min(100%, var(--max-width))` and `margin: 0 auto`.
 - Generated apps that use an app root should wrap it in `main#main-content` and give `#app` `width: min(100%, 860px)` plus `margin-inline: auto`.
-- Do not ship literal generated line-break text like `` `n`` or `` `r`n`` in HTML.
+- Do not ship literal generated line-break text like `` `n`` or `` 
+`` in HTML.
 - IDs must be unique. Duplicate progress dots, tabs, modals, and inputs are a ship-check failure.
 - CSS load order is `dark-mode.css`, `components.css`, `responsive.css`, then the app CSS.
 ## Service worker update flow
