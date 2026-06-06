@@ -18,7 +18,7 @@
  * BUMP THIS VERSION STRING on every deploy that changes HTML, CSS, JS, manifest, or SW behavior.
  */
 
-const CACHE_VERSION = 'khub-boilerplate-v7-cloud-sync-module';
+const CACHE_VERSION = 'khub-boilerplate-v8-cloud-latest-device-doc';
 
 /**
  * All URLs that make up the app shell.
