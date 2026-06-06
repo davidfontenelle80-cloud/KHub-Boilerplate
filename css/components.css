@@ -6,14 +6,14 @@
  */
 
 :root {
-  --khub-bg: var(--bg, #07080c);
-  --khub-surface: var(--surface, var(--card, #14171f));
-  --khub-surface-sub: var(--surface-sub, var(--input-bg, #1b1f2a));
+  --khub-bg: var(--bg, #050607);
+  --khub-surface: var(--surface, var(--card, #111318));
+  --khub-surface-sub: var(--surface-sub, var(--input-bg, #29283d));
   --khub-border: var(--border, rgba(255,255,255,0.07));
-  --khub-text: var(--text, #f5f7fa);
+  --khub-text: var(--text, #f7f8fb);
   --khub-muted: var(--text-dim, var(--muted, #a0aab8));
-  --khub-accent: var(--accent, var(--ot, #34d399));
-  --khub-danger: var(--danger, var(--coral, #ef4444));
+  --khub-accent: var(--accent, var(--ot, #58c18f));
+  --khub-danger: var(--danger, var(--coral, #ff5d5d));
   --khub-radius: 18px;
   --khub-shadow: 0 16px 40px rgba(0,0,0,.45);
 }
