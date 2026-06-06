@@ -168,7 +168,7 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
 .header-controls { display: flex; gap: var(--space-sm); }
 
 .app-main {
-  max-width: var(--max-width);
+  width: min(100%, var(--max-width));
   margin: 0 auto;
   padding: var(--space-md);
   padding-bottom: calc(var(--bottom-nav-height) + var(--space-md));
