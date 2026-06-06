@@ -18,7 +18,7 @@
  * BUMP THIS VERSION STRING on every deploy that changes HTML, CSS, JS, manifest, or SW behavior.
  */
 
-const CACHE_VERSION = 'khub-boilerplate-v6-centered-shell';
+const CACHE_VERSION = 'khub-boilerplate-v7-cloud-sync-module';
 
 /**
  * All URLs that make up the app shell.
@@ -37,6 +37,7 @@ const PRECACHE_URLS = [
   './js/theme.js',
   './js/error-boundary.js',
   './js/auth.js',
+  './js/firebase/cloud-backup.js',
   './js/a11y.js',
   './js/components/button.js',
   './js/components/modal.js',
