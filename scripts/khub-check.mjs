@@ -40,10 +40,28 @@ const allJs = jses.map(read).join('\n');
 const inlineJs = (allHtml.match(/<script>([\s\S]*?)<\/script>/g) || [])
   .map((s) => s.replace(/<\/?script>/g, '')).join('\n');
 const jsBody = allJs + '\n' + inlineJs;
+const css = stripComments(allCss);
+
+// ---- 0. markup hygiene ----
+if (/[`][rn]/.test(allHtml)) {
+  FAIL('Literal generated line-break text found in HTML (`n or `r`n). Replace it with real newlines.');
+}
+const idCounts = new Map();
+for (const hit of allHtml.matchAll(/\bid=["']([^"']+)["']/g)) {
+  idCounts.set(hit[1], (idCounts.get(hit[1]) || 0) + 1);
+}
+const duplicateIds = [...idCounts.entries()].filter(([, count]) => count > 1).map(([id, count]) => `${id} (${count})`);
+if (duplicateIds.length) {
+  FAIL(`Duplicate HTML id values found: ${duplicateIds.join(', ')}.`);
+}
+if (/<link[^>]+css\/dark-mode\.css[\s\S]*<link[^>]+css\/components\.css[\s\S]*<link[^>]+css\/responsive\.css[\s\S]*<link[^>]+css\/(?:main|styles)\.css/.test(allHtml) === false &&
+    /<link[^>]+css\/(?:dark-mode|components|responsive)\.css/.test(allHtml)) {
+  FAIL('KHub CSS files must load in order: dark-mode.css, components.css, responsive.css, then app main.css/styles.css.');
+}
 
 // ---- 1. JS syntax ----
 for (const f of jses) {
-  try { execSync(`node --check "${f}"`, { stdio: 'pipe' }); }
+  try { execSync(`"${process.execPath}" --check "${f}"`, { stdio: 'pipe' }); }
   catch (e) { FAIL(`JS syntax error in ${f}: ${String(e.stderr || e).split('\n')[0]}`); }
 }
 (allHtml.match(/<script>([\s\S]*?)<\/script>/g) || []).forEach((blk, i) => {
@@ -61,9 +79,12 @@ if (!/@media[^{]*768/.test(allCss)) WARN('No 768px (tablet) breakpoint found.');
 if (!/@media[^{]*1200/.test(allCss)) WARN('No 1200px (desktop) breakpoint found.');
 if (/localStorage/.test(jsBody) && !/(export|import|backup|restore)/i.test(jsBody))
   WARN('Uses localStorage but no export/import/backup found.');
+if (!/#main-content\s*\{[^}]*justify-content\s*:\s*center/.test(css) && !/main-content/.test(allHtml))
+  WARN('No centered main app shell found. Use main#main-content to center #app across desktop, laptop, tablet, and phone.');
+if (/#app\s*\{[^}]*align-items\s*:\s*center/.test(css) && !/#app\s*\{[^}]*margin-inline\s*:\s*auto/.test(css))
+  WARN('#app centers children but the app root itself is not clearly centered. Add width:min(100%, 860px) and margin-inline:auto.');
 
 // ---- 3. design conformance (scan non-theme CSS rules) ----
-const css = stripComments(allCss);
 // split into rule blocks: selector { body }
 const ruleRe = /([^{}]+)\{([^{}]*)\}/g;
 let m;
