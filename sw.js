@@ -18,7 +18,7 @@
  * BUMP THIS VERSION STRING on every deploy that changes HTML, CSS, JS, manifest, or SW behavior.
  */
 
-const CACHE_VERSION = 'khub-boilerplate-v18-specific-error-labels';
+const CACHE_VERSION = 'khub-boilerplate-v19-email-cloud-auth';
 
 /**
  * All URLs that make up the app shell.

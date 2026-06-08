@@ -128,6 +128,7 @@
     if (code.indexOf('auth/invalid-email') !== -1) return 'Enter a valid email address.';
     if (code.indexOf('auth/configuration-not-found') !== -1) return 'Cloud sign-in is not enabled yet. In Firebase Authentication, enable Email/Password sign-in.';
     if (code.indexOf('auth/network-request-failed') !== -1) return 'Cloud sign-in could not reach Firebase. Check your connection and try again.';
+    if (code.indexOf('requests-from-referer') !== -1 || code.indexOf('API_KEY_HTTP_REFERRER_BLOCKED') !== -1) return 'Cloud sign-in is blocked by the Google API key website restriction. Add this app URL to the API key restrictions.';
     if (code.indexOf('auth/too-many-requests') !== -1) return 'Firebase temporarily blocked sign-in attempts. Wait a few minutes, then try again.';
     if (code.indexOf('auth-timeout') !== -1) return 'Cloud sign-in is taking too long. Check your connection and tap Sign in again.';
     if (code.indexOf('permission-denied') !== -1 || code.indexOf('Missing or insufficient permissions') !== -1) return 'Cloud backup is blocked by Firestore rules. Update rules to allow backups/{appId}/users/{yourUserId}.';
