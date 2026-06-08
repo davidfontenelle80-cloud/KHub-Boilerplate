@@ -18,7 +18,7 @@
  * BUMP THIS VERSION STRING on every deploy that changes HTML, CSS, JS, manifest, or SW behavior.
  */
 
-const CACHE_VERSION = 'khub-boilerplate-v16-email-auth-timeout';
+const CACHE_VERSION = 'khub-boilerplate-v17-email-only-auth';
 
 /**
  * All URLs that make up the app shell.
