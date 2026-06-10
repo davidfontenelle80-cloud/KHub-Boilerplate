@@ -60,7 +60,17 @@ if (/<link[^>]+css\/dark-mode\.css[\s\S]*<link[^>]+css\/components\.css[\s\S]*<l
 }
 
 // ---- 1. JS syntax ----
+// Files loaded as <script type="text/babel"> are JSX, transpiled in the browser
+// by Babel standalone. node --check cannot parse JSX, so skip those files here.
+// The agent still verifies them at runtime (app loads, no console errors).
+const babelSrcs = (allHtml.match(/<script[^>]+>/g) || [])
+  .filter((t) => /type=["']text\/babel["']/.test(t))
+  .map((t) => (t.match(/src=["']([^"']+)["']/) || [])[1])
+  .filter(Boolean)
+  .map((s) => s.replace(/^\.\//, '').replace(/\\/g, '/'));
+const isBabelFile = (f) => babelSrcs.some((s) => f.replace(/\\/g, '/').endsWith(s));
 for (const f of jses) {
+  if (isBabelFile(f)) continue;
   try { execSync(`"${process.execPath}" --check "${f}"`, { stdio: 'pipe' }); }
   catch (e) { FAIL(`JS syntax error in ${f}: ${String(e.stderr || e).split('\n')[0]}`); }
 }
