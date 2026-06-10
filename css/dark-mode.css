@@ -26,19 +26,19 @@ html[data-theme="dark"],
 html[data-theme="light"],
 [data-theme="light"] {
   color-scheme: light;
-  --color-primary: #10b981;
-  --color-primary-dark: #047857;
-  --color-accent: #10b981;
-  --color-bg: #f7f8fb;
+  --color-primary: #58c18f;
+  --color-primary-dark: #2f9d68;
+  --color-accent: #f5aa2e;
+  --color-bg: #eef1f5;
   --color-surface: #ffffff;
-  --color-border: rgba(143,151,184,.18);
+  --color-border: rgba(16,24,40,.12);
   --color-text: #0f172a;
   --color-text-muted: #64748b;
-  --color-text-inverse: #ffffff;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #dc2626;
-  --color-info: #3b82f6;
+  --color-text-inverse: #f7f8fb;
+  --color-success: #12a06a;
+  --color-warning: #c47f12;
+  --color-error: #d92d3f;
+  --color-info: #2f6fed;
   --shadow-sm: 0 1px 2px rgba(15,23,42,.04), 0 2px 8px rgba(15,23,42,.03);
   --shadow-md: 0 12px 32px rgba(15,23,42,.10);
 }

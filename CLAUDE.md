@@ -8,6 +8,14 @@ This file is read automatically when working in this repo. Honor it on every cha
   in component CSS.
 - No sharp corners. Radius comes from the scale: sm 10, md 16, lg 22, xl 28, full.
 - Press-scale, spring transitions, glow on the primary action, monospace tabular numbers.
+- Status surfaces use the soft wash pattern: soft token background at 15 percent,
+  soft border at 40 percent, full-strength accent text. Use the .alert and .status-chip
+  components and the -soft tokens. Never solid blocks for warnings.
+- Labels are specific. Buttons and fields say what they act on: "Delete March arrangement,"
+  not "Delete." Confirmations name the thing being changed.
+- Every error shown to the user says exactly what failed: error type, file, line, and message,
+  so a screenshot is enough to diagnose it. The boilerplate error boundary does this; never
+  replace it with a generic "Something went wrong" without details.
 
 ## Before calling any version done, run the ship check
 1. Open the app. No console errors. Error boundary present.
