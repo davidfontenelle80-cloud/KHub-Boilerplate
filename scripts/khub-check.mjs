@@ -139,6 +139,32 @@ if (!/:active[^{]*\{[^}]*scale\(/.test(css) && !/transform:\s*scale\(/.test(css)
 if (!/tabular-nums|font-variant-numeric/.test(css))
   WARN('No tabular numbers (font-variant-numeric) found.');
 
+// ---- 4. service worker actually registered ----
+// ministry-tracker and next-dollar shipped orphan sw.js files (Jun 2026):
+// versioned SW present, never registered, so no offline cache and every
+// CACHE_VERSION bump was a no-op. Catch that statically.
+const swFile = files.find((f) => path.basename(f) === 'sw.js');
+if (swFile && !/navigator\.serviceWorker\.register|serviceWorker\s*\.\s*register\s*\(/.test(jsBody + '\n' + allHtml))
+  FAIL('sw.js exists but nothing registers it (navigator.serviceWorker.register). Orphan SW: no offline cache, version bumps do nothing.');
+
+// ---- 5. mobile input zoom (16px iOS rule) ----
+// Inputs under 16px make iPhone Safari zoom on focus and stay zoomed.
+const inputSelRe = /(^|[\s,>])(input|select|textarea)\b/;
+const smallInputs = [];
+const zoomRuleRe = /([^{}]+)\{([^{}]*)\}/g;
+let zm;
+while ((zm = zoomRuleRe.exec(css)) !== null) {
+  const sel = zm[1].trim();
+  if (/:root|@/.test(sel) || !inputSelRe.test(sel)) continue;
+  const fs = zm[2].match(/font-size:\s*(\d+(?:\.\d+)?)(px|rem)/);
+  if (!fs) continue;
+  const pxv = fs[2] === 'rem' ? parseFloat(fs[1]) * 16 : parseFloat(fs[1]);
+  if (pxv < 16) smallInputs.push(`"${sel.slice(0, 48)}" -> ${fs[0].trim()}`);
+}
+const hasMobileInputOverride = /@media[^{]*max-width[\s\S]{0,600}?(input|select|textarea)[^{]*\{[^}]*font-size:\s*16px/.test(allCss);
+if (smallInputs.length && !hasMobileInputOverride)
+  WARN(`Inputs under 16px zoom iPhone Safari on focus: ${smallInputs.slice(0, 3).join('; ')}${smallInputs.length > 3 ? ' (+' + (smallInputs.length - 3) + ' more)' : ''}. Add a 16px override under 680px.`);
+
 // ---- report ----
 const line = '-'.repeat(56);
 console.log(line);
