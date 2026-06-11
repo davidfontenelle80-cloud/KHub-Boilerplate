@@ -24,7 +24,13 @@ This file is read automatically when working in this repo. Honor it on every cha
 4. Installs as a PWA and serves clean from GitHub Pages.
 5. Design conformance: tokens only, unified radii, no mixed sharp and rounded edges,
    components match the KHub library, motion and polish present.
-6. Fix every fail before shipping. Deliver one clean working build.
+6. App icons are THIS app's own icons. The boilerplate icon set is a placeholder and
+   shipping it is a fail. When a build is nearly done, ask David for the icon artwork
+   (a photo, drawing, or image works), then generate the full set from it:
+   icon-72 / 96 / 128 / 144 / 152 / 192 / 384 / 512 (192 and 512 maskable),
+   apple-touch-icon.png, and favicon.svg. The manifest must point at them.
+   khub-check warns when icon-192.png is still the placeholder.
+7. Fix every fail before shipping. Deliver one clean working build.
 
 ## How to run the static part of the check
 From the repo root:

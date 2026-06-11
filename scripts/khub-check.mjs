@@ -122,6 +122,16 @@ while ((m = ruleRe.exec(css)) !== null) {
     else WARN(`Hard-coded radius in "${sel}" -> ${r.trim()} (prefer var(--radius-*)).`);
   }
 }
+// app icon must not be the boilerplate placeholder
+import { createHash } from 'crypto';
+const PLACEHOLDER_ICON_MD5 = 'c7cf40c4537e729c719b5e08574033c5';
+const icon192 = files.find((f) => f.replace(/\\/g, '/').endsWith('icons/icon-192.png'));
+if (icon192) {
+  const hash = createHash('md5').update(fs.readFileSync(icon192)).digest('hex');
+  if (hash === PLACEHOLDER_ICON_MD5 && !path.resolve(target).includes('KHub-Boilerplate'))
+    WARN('icons/icon-192.png is still the boilerplate placeholder. Ask David for this app\'s icon artwork and generate the full set before ship.');
+}
+
 // press-scale present somewhere
 if (!/:active[^{]*\{[^}]*scale\(/.test(css) && !/transform:\s*scale\(/.test(css))
   WARN('No press-scale (:active scale) found. Polish is required.');
