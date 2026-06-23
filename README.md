@@ -128,6 +128,30 @@ npm run check        # lint + format check together
 
 ---
 
+## Firebase / Firestore Security Standard
+
+Current KHub apps may use:
+
+```text
+/backups/{appId}/users/{userId}/...
+```
+
+Future KHub apps should use:
+
+```text
+/khubApps/{appId}/users/{userId}/...
+```
+
+Every user-owned path must require:
+
+```text
+request.auth != null && request.auth.uid == userId
+```
+
+See `SECURITY_FIREBASE.md` before implementing cloud backup, cloud sync, notifications, or Cloudflare workers.
+
+---
+
 ## JS namespace
 
 All modules attach to `window.KHub`. Load order matters (config first, app last):
@@ -187,8 +211,7 @@ The boilerplate must stay centered on every viewport: phone, tablet, laptop, and
 
 - `#main-content.app-main` uses `width: min(100%, var(--max-width))` and `margin: 0 auto`.
 - Generated apps that use an app root should wrap it in `main#main-content` and give `#app` `width: min(100%, 860px)` plus `margin-inline: auto`.
-- Do not ship literal generated line-break text like `` `n`` or `` 
-`` in HTML.
+- Do not ship literal generated line-break artifacts in HTML.
 - IDs must be unique. Duplicate progress dots, tabs, modals, and inputs are a ship-check failure.
 - CSS load order is `dark-mode.css`, `components.css`, `responsive.css`, then the app CSS.
 ## Service worker update flow
