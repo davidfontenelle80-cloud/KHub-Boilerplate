@@ -28,6 +28,7 @@
 | Icon system (8 sizes + SVG favicon) | `icons/` |
 | Performance check | `js/perf.js` |
 | Full test checklist | `TEST-CHECKLIST.md` |
+| Push notifications (closed-app reminders) | `docs/notifications/NOTIFICATIONS.md` + `docs/notifications/reference/` |
 
 ---
 
