@@ -1,9 +1,10 @@
-const CACHE_VERSION = "aurum-voice-v1-002";
+const CACHE_VERSION = "aurum-voice-v1-004";
 const PRECACHE_URLS = [
   "./",
   "index.html",
-  "css/main.css",
-  "js/app.js",
+  "css/main.css?v=aurum-v1-004",
+  "js/app.js?v=aurum-v1-004",
+  "js/aurum-v003.js?v=aurum-v1-004",
   "manifest.json"
 ];
 
@@ -26,6 +27,12 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy)).catch(() => {});
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
