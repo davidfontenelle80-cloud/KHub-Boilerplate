@@ -35,7 +35,14 @@
       startVoice: "Start voice draft",
       stopVoice: "Stop listening",
       idle: "Idle. Nothing is listening.",
-      listening: "Listening simulation active. This area will connect to live speech capture.",
+      listening: "Listening. Speak now.",
+      voiceStarting: "Starting microphone...",
+      voiceListening: "Listening. Speak now.",
+      voiceStopped: "Listening stopped. Text added to your draft.",
+      voiceUnsupported: "Live transcription is not supported in this browser. Try Chrome or Edge on Android, or use dictation from the phone keyboard.",
+      voicePermissionBlocked: "Microphone permission was blocked. Allow microphone access for this site and try again.",
+      voiceNoSpeech: "I did not hear anything. Try again closer to the mic.",
+      voiceError: "Speech capture stopped. Try again.",
       draftWorkspaceLabel: "Draft workspace",
       utilityLabel: "Saved notes and shortcuts",
       draftKicker: "Draft",
@@ -100,7 +107,14 @@
       startVoice: "Iniciar borrador por voz",
       stopVoice: "Dejar de escuchar",
       idle: "Inactivo. Nada está escuchando.",
-      listening: "Simulación de escucha activa. Esta zona se conectará a la captura de voz en vivo.",
+      listening: "Escuchando. Habla ahora.",
+      voiceStarting: "Iniciando micrófono...",
+      voiceListening: "Escuchando. Habla ahora.",
+      voiceStopped: "Escucha detenida. El texto se agregó a tu borrador.",
+      voiceUnsupported: "La transcripción en vivo no es compatible con este navegador. Prueba Chrome o Edge en Android, o usa el dictado del teclado del teléfono.",
+      voicePermissionBlocked: "El permiso del micrófono fue bloqueado. Permite el acceso al micrófono para este sitio e inténtalo otra vez.",
+      voiceNoSpeech: "No escuché nada. Inténtalo más cerca del micrófono.",
+      voiceError: "La captura de voz se detuvo. Inténtalo otra vez.",
       draftWorkspaceLabel: "Espacio de borrador",
       utilityLabel: "Notas guardadas y atajos",
       draftKicker: "Borrador",
@@ -149,6 +163,8 @@
   };
 
   let langBeforeClick = null;
+  let recognition = null;
+  let isRecognizing = false;
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -244,13 +260,133 @@
   function setupMicStatusRepair() {
     const mic = document.getElementById("mic-button");
     if (!mic) return;
-    mic.addEventListener("click", () => {
-      window.setTimeout(() => {
-        const pressed = mic.getAttribute("aria-pressed") === "true";
-        setText("#mic-label", pressed ? t("stopVoice") : t("startVoice"));
-        setText("#status-line", pressed ? t("listening") : t("idle"));
-      }, 0);
-    });
+
+    mic.addEventListener("click", handleSpeechToggle, true);
+
+    const floating = document.getElementById("floating-mic");
+    floating?.addEventListener(
+      "click",
+      (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        document.getElementById("voice-title")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        mic.focus();
+        handleSpeechToggle(event);
+      },
+      true
+    );
+  }
+
+  function handleSpeechToggle(event) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (isRecognizing) {
+      stopSpeechRecognition();
+      return;
+    }
+
+    startSpeechRecognition();
+  }
+
+  function speechRecognitionConstructor() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+
+  function startSpeechRecognition() {
+    const SpeechRecognition = speechRecognitionConstructor();
+    if (!SpeechRecognition) {
+      updateMicState(false, t("voiceUnsupported"));
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = currentLang() === "es" ? "es-US" : "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+      isRecognizing = true;
+      updateMicState(true, t("voiceListening"));
+    };
+
+    recognition.onresult = (event) => {
+      let finalText = "";
+      let interimText = "";
+
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        const transcript = event.results[index][0]?.transcript || "";
+        if (event.results[index].isFinal) {
+          finalText += `${transcript} `;
+        } else {
+          interimText += transcript;
+        }
+      }
+
+      if (finalText.trim()) {
+        appendTranscript(finalText.trim());
+      }
+
+      if (interimText.trim()) {
+        setText("#status-line", interimText.trim());
+      }
+    };
+
+    recognition.onerror = (event) => {
+      const message =
+        event.error === "not-allowed" || event.error === "service-not-allowed"
+          ? t("voicePermissionBlocked")
+          : event.error === "no-speech"
+            ? t("voiceNoSpeech")
+            : t("voiceError");
+      updateMicState(false, message);
+      isRecognizing = false;
+    };
+
+    recognition.onend = () => {
+      if (isRecognizing) {
+        isRecognizing = false;
+        updateMicState(false, t("voiceStopped"));
+      }
+    };
+
+    updateMicState(true, t("voiceStarting"));
+
+    try {
+      recognition.start();
+    } catch (error) {
+      isRecognizing = false;
+      updateMicState(false, t("voiceError"));
+    }
+  }
+
+  function stopSpeechRecognition() {
+    if (!recognition) {
+      updateMicState(false, t("idle"));
+      return;
+    }
+
+    isRecognizing = false;
+    recognition.stop();
+    updateMicState(false, t("voiceStopped"));
+  }
+
+  function updateMicState(active, status) {
+    const mic = document.getElementById("mic-button");
+    mic?.classList.toggle("listening", active);
+    mic?.setAttribute("aria-pressed", String(active));
+    setText("#mic-label", active ? t("stopVoice") : t("startVoice"));
+    setText("#status-line", status);
+  }
+
+  function appendTranscript(text) {
+    const rawInput = document.getElementById("raw-input");
+    if (!rawInput) return;
+
+    const separator = rawInput.value.trim() ? " " : "";
+    rawInput.value = `${rawInput.value.trim()}${separator}${text}`.trim();
+    rawInput.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("refine-btn")?.click();
   }
 
   function injectLayoutFix() {
