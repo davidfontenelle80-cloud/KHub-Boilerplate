@@ -1,4 +1,4 @@
-const CACHE_VERSION = "aurum-voice-v1-001";
+const CACHE_VERSION = "aurum-voice-v1-002";
 const PRECACHE_URLS = [
   "./",
   "index.html",

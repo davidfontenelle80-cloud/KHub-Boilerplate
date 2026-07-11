@@ -8,6 +8,7 @@ Aurum Voice is a controlled voice-writing app inspired by the useful parts of AI
 - Manual review before copy, share, or save.
 - Local saved notes with search.
 - Light and dark mode.
+- English and Spanish interface toggle.
 - Text sizing controls.
 - Tablet, phone, and desktop responsive layout.
 - PWA shell with local service worker.
