@@ -1,0 +1,12 @@
+{
+  "name": "Aurum Voice",
+  "short_name": "Aurum",
+  "description": "Controlled voice writing for notes, drafts, and paste-ready text.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070808",
+  "theme_color": "#090a0b",
+  "orientation": "any",
+  "categories": ["productivity", "utilities"]
+}
