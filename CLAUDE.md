@@ -1,5 +1,12 @@
 # Build and Ship Rules for This App
 
+## REPO SCOPE — READ FIRST
+This repo is REFERENCE ONLY: the instructions, format, tokens, and starter files for building KHub apps.
+- NEVER build, prototype, or store an app inside this repo. Not even "temporarily."
+- Every app gets its OWN repository. To start one: create a new repo, copy the boilerplate files into it, then build there.
+- The only app folder here is aurum-voice-v1, kept deliberately as a worked reference example. Do not add more. The live Aurum Voice app is its own repo: davidfontenelle80-cloud/aurum-voice.
+- If asked to add app code here, stop and point to this rule instead.
+
 This file is read automatically when working in this repo. Honor it on every change.
 
 ## House finish (from KHub-Boilerplate)
