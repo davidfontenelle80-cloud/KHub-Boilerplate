@@ -45,7 +45,7 @@ duplicate KHub shell responsibilities inside the framework.
 
 ---
 
-## 2. Viewport and zoom (required)
+## 2. Viewport and zoom (per-app, owner decision)
 
 KHub apps use responsive layout reflow for phones, tablets, laptops, and
 desktops. Pinch zoom is **disabled by default** so accidental gestures do not
@@ -78,6 +78,11 @@ distort the installed-app interface.
   of **at least 16px**. Below 16px, iOS Safari may auto-zoom on focus even when
   the general interface is designed to remain fixed.
 - Layouts must remain usable at the largest `KHub.A11y` font step (130%).
+- Zoom behavior is a **per-app owner decision** (David decides). The locked
+  default suits installed, phone-first field-use apps; apps where reading-heavy
+  content or large-screen/desktop use matters should ship with pinch zoom
+  enabled instead.
+- **Document each app's zoom choice and the reason in its README.**
 
 ---
 

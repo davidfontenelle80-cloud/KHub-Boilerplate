@@ -16,7 +16,12 @@ This file is read automatically when working in this repo. Honor it on every cha
 - Two supported modes: vanilla, or framework-hosted inside the KHub shell. KHub owns the
   shell (PWA, updates, tokens, safe-area, a11y, error recovery, storage/backup contracts)
   in BOTH modes. Never force vanilla patterns onto a framework-hosted app.
-- Viewport: NEVER `user-scalable=no` or any `maximum-scale`. All inputs ≥16px font-size.
+- Viewport: zoom is a per-app owner decision (UX-STANDARDS §2). Installed phone-first PWAs
+  default to locked zoom (`user-scalable=no`, `maximum-scale=1.0`) to prevent accidental
+  pinch destabilization, with the `KHub.Config.setPinchZoomEnabled()` opt-in available —
+  valid ONLY when all inputs are ≥16px and `KHub.A11y` font scaling works. Reading-heavy or
+  large-screen apps keep zoom enabled. Document the choice in the app README.
+  All inputs ≥16px font-size, always.
 - Navigation: classify every control (Destination / Primary action / Utility / Destructive).
   Max five destinations in mobile persistent navigation. Utilities don't get nav slots.
 - Imports/restores follow the 9-step contract — never overwrite data right after file selection.
