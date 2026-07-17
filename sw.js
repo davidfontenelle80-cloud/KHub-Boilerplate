@@ -18,7 +18,7 @@
  * BUMP THIS VERSION STRING on every deploy that changes HTML, CSS, JS, manifest, or SW behavior.
  */
 
-const CACHE_VERSION = 'khub-boilerplate-v19-email-cloud-auth';
+const CACHE_VERSION = 'khub-boilerplate-v20-pinch-zoom-default-off';
 
 /**
  * All URLs that make up the app shell.
@@ -48,8 +48,6 @@ const PRECACHE_URLS = [
 ];
 
 // ── Install ──────────────────────────────────────────────────
-// Cache every app-shell URL. If any fail, the install aborts —
-// that keeps the old SW serving until a complete set is ready.
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_VERSION)
@@ -63,8 +61,6 @@ self.addEventListener('install', event => {
 });
 
 // ── Activate ─────────────────────────────────────────────────
-// Delete every cache that isn't the current version,
-// then take control of all open pages immediately.
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -78,7 +74,6 @@ self.addEventListener('activate', event => {
       ))
       .then(() => self.clients.claim())
       .then(() => {
-        // Broadcast to all tabs: "new version is now active, safe to reload"
         self.clients.matchAll({ type: 'window' }).then(clients => {
           clients.forEach(client => client.postMessage({ type: 'RELOAD_READY' }));
         });
@@ -87,7 +82,6 @@ self.addEventListener('activate', event => {
 });
 
 // Strategy: network-first for app shell, network-only for everything else.
-// This keeps visual fixes fresh while preserving offline fallback.
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
@@ -97,8 +91,6 @@ self.addEventListener('fetch', event => {
   const isAppShell = PRECACHE_URLS.some(path => new URL(path, self.location.href).pathname === url.pathname);
   if (!isAppShell) return;
 
-  // Network-first for app-shell files so style/script fixes appear quickly.
-  // Cached files remain the offline fallback.
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -111,9 +103,8 @@ self.addEventListener('fetch', event => {
       .catch(() => caches.match(event.request))
   );
 });
+
 // ── Messages ─────────────────────────────────────────────────
-// SKIP_WAITING: sent by app.js when user clicks "Refresh" on the update banner.
-// SW skips the waiting phase and activates immediately.
 self.addEventListener('message', event => {
   if (!event.data) return;
 
