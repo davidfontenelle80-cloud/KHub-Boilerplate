@@ -47,22 +47,37 @@ duplicate KHub shell responsibilities inside the framework.
 
 ## 2. Viewport and zoom (required)
 
-Users must always be able to pinch-zoom and scale text.
+KHub apps use responsive layout reflow for phones, tablets, laptops, and
+desktops. Pinch zoom is **disabled by default** so accidental gestures do not
+distort the installed-app interface.
 
-- **Prohibited:** `user-scalable=no` and any `maximum-scale` value.
-  There is no routine exception. If one is ever genuinely required,
-  document the reason in the app README.
-- **Required viewport tag:**
+- **Required default viewport tag:**
 
   ```html
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta id="khub-viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   ```
 
-- **Inputs:** every input, select, and textarea must have a computed
-  font-size of **at least 16px**. Below 16px, iOS Safari auto-zooms on
-  focus, which reads as a layout bug during data entry.
-- Layouts must remain usable at increased browser zoom and at the
-  largest `KHub.A11y` font step (130%).
+- Responsive CSS and breakpoints must remain independent from zoom. Disabling
+  pinch zoom must never be used as a substitute for a responsive layout.
+- Apps may offer an accessibility option in Settings. Enable it with:
+
+  ```js
+  KHub.Config.setPinchZoomEnabled(true);
+  ```
+
+  Disable it again with:
+
+  ```js
+  KHub.Config.setPinchZoomEnabled(false);
+  ```
+
+  The preference is stored per app in `localStorage` and applied at startup.
+- Settings copy should clearly explain that enabling pinch zoom can temporarily
+  enlarge or shift the interface and that responsive sizing remains automatic.
+- **Inputs:** every input, select, and textarea must have a computed font-size
+  of **at least 16px**. Below 16px, iOS Safari may auto-zoom on focus even when
+  the general interface is designed to remain fixed.
+- Layouts must remain usable at the largest `KHub.A11y` font step (130%).
 
 ---
 
@@ -81,11 +96,11 @@ Classify **every visible control** as exactly one of:
 
 - Mobile persistent navigation contains **no more than five destinations**.
 - Settings, import, export, backup, print, and reset are utilities or
-  actions — they do not get navigation slots unless they are genuinely
-  daily destinations for that app.
+actions — they do not get navigation slots unless they are genuinely
+daily destinations for that app.
 - Destructive actions never receive the same placement or prominence as
-  routine actions, and confirmations name the thing being changed
-  (see `CLAUDE.md` labeling rule).
+routine actions, and confirmations name the thing being changed
+(see `CLAUDE.md` labeling rule).
 - Do not create a top-level tab merely because a feature has its own screen.
 
 ### Example (documentation illustration — Finance Tracker)
@@ -124,14 +139,14 @@ file selection. Steps 2–6 always come first.
 KHub apps are installable PWAs; the main task must work offline.
 
 - Every runtime dependency (frameworks, icon fonts, web fonts, SDKs,
-  spreadsheet libraries) is either self-hosted and precached, or the app
-  demonstrably completes its main task without it.
+spreadsheet libraries) is either self-hosted and precached, or the app
+demonstrably completes its main task without it.
 - A cold offline launch after installation must render the app and allow
-  its primary task to complete.
+its primary task to complete.
 - Provide a fallback font stack — missing network fonts must not block the UI.
 - When precache contents change, bump `CACHE_VERSION` in `sw.js` and clean
-  up old caches in the `activate` handler, or installed users never receive
-  the new assets.
+up old caches in the `activate` handler, or installed users never receive
+the new assets.
 
 ---
 
