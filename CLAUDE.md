@@ -9,6 +9,23 @@ This repo is REFERENCE ONLY: the instructions, format, tokens, and starter files
 
 This file is read automatically when working in this repo. Honor it on every change.
 
+## UX standards (docs/UX-STANDARDS.md) — binding on every KHub app
+- Two supported modes: vanilla, or framework-hosted inside the KHub shell. KHub owns the
+  shell (PWA, updates, tokens, safe-area, a11y, error recovery, storage/backup contracts)
+  in BOTH modes. Never force vanilla patterns onto a framework-hosted app.
+- Viewport: NEVER `user-scalable=no` or any `maximum-scale`. All inputs ≥16px font-size.
+- Navigation: classify every control (Destination / Primary action / Utility / Destructive).
+  Max five destinations in mobile persistent navigation. Utilities don't get nav slots.
+- Imports/restores follow the 9-step contract — never overwrite data right after file selection.
+- Offline: runtime dependencies are precached or self-hosted; cold offline launch must
+  complete the app's main task; bump `CACHE_VERSION` when precache contents change.
+- Every new app declares an archetype (docs/APP-ARCHETYPES.md: task tracker, calculator,
+  management, financial dashboard) and a layout mode (compact 680 / standard 960 / wide 1360
+  via the --max-width token). Follow the archetype's screen order and first-use state.
+- One page title and one primary action per screen; max two prominent secondary actions.
+- Save/sync status uses the shared vocabulary in UX-STANDARDS §7, shown as text + chip,
+  never color alone, announced via a targeted live region.
+
 ## House finish (from KHub-Boilerplate)
 - Dark theme by default, light theme on toggle. Both must work.
 - All color, radius, spacing, shadow, and motion come from the KHub tokens. No raw values

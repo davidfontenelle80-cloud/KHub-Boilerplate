@@ -2,7 +2,8 @@
 
 > Reusable vanilla PWA starter — multi-file, no build step, installable via GitHub Pages.
 
-**Stack:** HTML + CSS + Vanilla JS · No framework · No bundler · No build step  
+**Stack:** HTML + CSS + Vanilla JS · No bundler · No build step  
+**Modes:** Vanilla (default) or framework-hosted inside the KHub shell — see `docs/UX-STANDARDS.md` §1  
 **Live demo:** https://davidfontenelle80-cloud.github.io/KHub-Boilerplate/  
 **Repo:** https://github.com/davidfontenelle80-cloud/KHub-Boilerplate
 
@@ -29,6 +30,8 @@
 | Performance check | `js/perf.js` |
 | Full test checklist | `TEST-CHECKLIST.md` |
 | Push notifications (closed-app reminders) | `docs/notifications/NOTIFICATIONS.md` + `docs/notifications/reference/` |
+| UX standards (modes, viewport/zoom, navigation, layout, data safety, offline) | `docs/UX-STANDARDS.md` |
+| App archetypes (tracker, calculator, management, finance) | `docs/APP-ARCHETYPES.md` |
 
 ---
 
@@ -248,6 +251,7 @@ The service worker sets `start_url: "./"` and uses a relative scope — works at
 
 ## Making a new app from this boilerplate
 
+0. Read `docs/UX-STANDARDS.md` and `docs/APP-ARCHETYPES.md` — declare the app's archetype and layout mode in its README
 1. Fork / clone
 2. Update identity fields (`config.js`, `manifest.json`, `index.html`)
 3. Replace icons
