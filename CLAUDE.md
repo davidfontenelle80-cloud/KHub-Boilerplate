@@ -1,7 +1,9 @@
 # Build and Ship Rules for This App
 
 ## REPO SCOPE — READ FIRST
+
 This repo is REFERENCE ONLY: the instructions, format, tokens, and starter files for building KHub apps.
+
 - NEVER build, prototype, or store an app inside this repo. Not even "temporarily."
 - Every app gets its OWN repository. To start one: create a new repo, copy the boilerplate files into it, then build there.
 - No app folders live here. Example: Aurum Voice was moved to its own repo (davidfontenelle80-cloud/aurum-voice).
@@ -10,6 +12,7 @@ This repo is REFERENCE ONLY: the instructions, format, tokens, and starter files
 This file is read automatically when working in this repo. Honor it on every change.
 
 ## UX standards (docs/UX-STANDARDS.md) — binding on every KHub app
+
 - Two supported modes: vanilla, or framework-hosted inside the KHub shell. KHub owns the
   shell (PWA, updates, tokens, safe-area, a11y, error recovery, storage/backup contracts)
   in BOTH modes. Never force vanilla patterns onto a framework-hosted app.
@@ -27,6 +30,7 @@ This file is read automatically when working in this repo. Honor it on every cha
   never color alone, announced via a targeted live region.
 
 ## House finish (from KHub-Boilerplate)
+
 - Dark theme by default, light theme on toggle. Both must work.
 - All color, radius, spacing, shadow, and motion come from the KHub tokens. No raw values
   in component CSS.
@@ -42,6 +46,7 @@ This file is read automatically when working in this repo. Honor it on every cha
   replace it with a generic "Something went wrong" without details.
 
 ## Before calling any version done, run the ship check
+
 1. Open the app. No console errors. Error boundary present.
 2. Open every view, tab, and modal. Each renders real content, not a blank or white screen.
 3. Dark and light both render. Language toggle works.
@@ -57,8 +62,11 @@ This file is read automatically when working in this repo. Honor it on every cha
 7. Fix every fail before shipping. Deliver one clean working build.
 
 ## How to run the static part of the check
+
 From the repo root:
+
 ```
 node scripts/khub-check.mjs .
 ```
+
 This reports operational and design drift. A clean report is required to ship.

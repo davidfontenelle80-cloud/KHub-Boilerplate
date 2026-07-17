@@ -11,27 +11,27 @@
 
 ## What's included
 
-| Feature | File(s) |
-|---|---|
-| PWA shell + manifest | `index.html`, `manifest.json` |
-| Service worker (12h update check) | `sw.js`, `js/app.js` |
-| Responsive design (phone/tablet/desktop) | `css/responsive.css` |
-| EN/ES language toggle | `js/i18n.js` |
-| Dark mode (system + manual) | `js/theme.js`, `css/dark-mode.css` |
-| Accessibility (WCAG 2.2 AA) | `js/a11y.js`, ARIA in `index.html` |
-| Error boundary | `js/error-boundary.js` |
-| Reusable auth pattern | `js/auth.js` |
-| Firebase folder (inactive) | `firebase/` |
-| Optional shared cloud backup/sync | `js/firebase/cloud-backup.js` |
-| Dev/prod environment config | `js/config.js`, `.env.dev`, `.env.prod` |
-| ESLint + Prettier | `.eslintrc.json`, `.prettierrc` |
-| Component library | `js/components/`, `css/components.css` |
-| Icon system (8 sizes + SVG favicon) | `icons/` |
-| Performance check | `js/perf.js` |
-| Full test checklist | `TEST-CHECKLIST.md` |
-| Push notifications (closed-app reminders) | `docs/notifications/NOTIFICATIONS.md` + `docs/notifications/reference/` |
-| UX standards (modes, viewport/zoom, navigation, layout, data safety, offline) | `docs/UX-STANDARDS.md` |
-| App archetypes (tracker, calculator, management, finance) | `docs/APP-ARCHETYPES.md` |
+| Feature                                                                       | File(s)                                                                 |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| PWA shell + manifest                                                          | `index.html`, `manifest.json`                                           |
+| Service worker (12h update check)                                             | `sw.js`, `js/app.js`                                                    |
+| Responsive design (phone/tablet/desktop)                                      | `css/responsive.css`                                                    |
+| EN/ES language toggle                                                         | `js/i18n.js`                                                            |
+| Dark mode (system + manual)                                                   | `js/theme.js`, `css/dark-mode.css`                                      |
+| Accessibility (WCAG 2.2 AA)                                                   | `js/a11y.js`, ARIA in `index.html`                                      |
+| Error boundary                                                                | `js/error-boundary.js`                                                  |
+| Reusable auth pattern                                                         | `js/auth.js`                                                            |
+| Firebase folder (inactive)                                                    | `firebase/`                                                             |
+| Optional shared cloud backup/sync                                             | `js/firebase/cloud-backup.js`                                           |
+| Dev/prod environment config                                                   | `js/config.js`, `.env.dev`, `.env.prod`                                 |
+| ESLint + Prettier                                                             | `.eslintrc.json`, `.prettierrc`                                         |
+| Component library                                                             | `js/components/`, `css/components.css`                                  |
+| Icon system (8 sizes + SVG favicon)                                           | `icons/`                                                                |
+| Performance check                                                             | `js/perf.js`                                                            |
+| Full test checklist                                                           | `TEST-CHECKLIST.md`                                                     |
+| Push notifications (closed-app reminders)                                     | `docs/notifications/NOTIFICATIONS.md` + `docs/notifications/reference/` |
+| UX standards (modes, viewport/zoom, navigation, layout, data safety, offline) | `docs/UX-STANDARDS.md`                                                  |
+| App archetypes (tracker, calculator, management, finance)                     | `docs/APP-ARCHETYPES.md`                                                |
 
 ---
 
@@ -119,11 +119,13 @@ npm run check        # lint + format check together
 ## Feature activation
 
 ### Auth
+
 1. Open `js/config.js` — set `features.auth: true`
 2. Open `js/auth.js` — implement `signIn`, `signOut`, and `onAuthChange` with your provider
 3. Call `KHub.Auth.renderControls('#container')` to inject the sign-in UI
 
 ### Firebase
+
 1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
 2. Open `firebase/firebase-config.js` — uncomment and fill in your project values
 3. Open `firebase/firebase-init.js` — uncomment the init block
@@ -165,34 +167,34 @@ config → i18n → theme → error-boundary → auth → a11y
 → components/* → perf → app
 ```
 
-| Namespace | What it does |
-|---|---|
-| `KHub.Config` | env, version, feature flags, log helpers |
-| `KHub.I18n` | `set(lang)`, `toggle()`, `t(key)` |
-| `KHub.Theme` | `toggle()`, `apply(theme)`, `reset()` |
-| `KHub.A11y` | `announce()`, `focusMain()`, `addShortcut()`, font sizing |
-| `KHub.ErrorBoundary` | `show(msg, retryFn?)`, `dismiss()` |
-| `KHub.Auth` | `signIn()`, `signOut()`, `renderControls()`, `onAuthChange()` |
-| `KHub.CloudBackup` | `save()`, `restore()`, `restoreLatestIfNewer()`, `autoSave()` |
-| `KHub.Components.Button` | `create({label, variant, onClick})` |
-| `KHub.Components.Modal` | `open({title, body, onConfirm})`, `close()` |
-| `KHub.Components.Card` | `create({title, body, footer})` |
-| `KHub.Components.Input` | `create({id, label, type, validate})` |
-| `KHub.Perf` | `report()`, `getMetrics()`, `onSlowLoad(fn)` |
-| `KHub.SW` | `applyUpdate()` |
-| `KHub.on/off/emit` | App-wide event bus |
+| Namespace                | What it does                                                  |
+| ------------------------ | ------------------------------------------------------------- |
+| `KHub.Config`            | env, version, feature flags, log helpers                      |
+| `KHub.I18n`              | `set(lang)`, `toggle()`, `t(key)`                             |
+| `KHub.Theme`             | `toggle()`, `apply(theme)`, `reset()`                         |
+| `KHub.A11y`              | `announce()`, `focusMain()`, `addShortcut()`, font sizing     |
+| `KHub.ErrorBoundary`     | `show(msg, retryFn?)`, `dismiss()`                            |
+| `KHub.Auth`              | `signIn()`, `signOut()`, `renderControls()`, `onAuthChange()` |
+| `KHub.CloudBackup`       | `save()`, `restore()`, `restoreLatestIfNewer()`, `autoSave()` |
+| `KHub.Components.Button` | `create({label, variant, onClick})`                           |
+| `KHub.Components.Modal`  | `open({title, body, onConfirm})`, `close()`                   |
+| `KHub.Components.Card`   | `create({title, body, footer})`                               |
+| `KHub.Components.Input`  | `create({id, label, type, validate})`                         |
+| `KHub.Perf`              | `report()`, `getMetrics()`, `onSlowLoad(fn)`                  |
+| `KHub.SW`                | `applyUpdate()`                                               |
+| `KHub.on/off/emit`       | App-wide event bus                                            |
 
 ---
 
 ## Keyboard shortcuts
 
-| Shortcut | Action |
-|---|---|
-| `Alt + D` | Toggle dark/light mode |
-| `Alt + L` | Toggle EN/ES language |
-| `Alt + H` | Jump to main content |
-| `Tab` | Navigate interactive elements |
-| `Escape` | Close open modal |
+| Shortcut  | Action                        |
+| --------- | ----------------------------- |
+| `Alt + D` | Toggle dark/light mode        |
+| `Alt + L` | Toggle EN/ES language         |
+| `Alt + H` | Jump to main content          |
+| `Tab`     | Navigate interactive elements |
+| `Escape`  | Close open modal              |
 
 ---
 
@@ -218,6 +220,7 @@ The boilerplate must stay centered on every viewport: phone, tablet, laptop, and
 - Do not ship literal generated line-break artifacts in HTML.
 - IDs must be unique. Duplicate progress dots, tabs, modals, and inputs are a ship-check failure.
 - CSS load order is `dark-mode.css`, `components.css`, `responsive.css`, then the app CSS.
+
 ## Service worker update flow
 
 ```
