@@ -10,6 +10,10 @@
  *   auth     — enables KHub.Auth sign-in/out (implement provider in auth.js)
  *   firebase — enables Firebase SDK (configure in firebase/firebase-config.js)
  *
+ * Pinch zoom is disabled by default for the installed-app experience. Apps may
+ * expose a Settings toggle that calls KHub.Config.setPinchZoomEnabled(true).
+ * The preference is persisted in localStorage for that app.
+ *
  * To fork this boilerplate for a new app, update:
  *   appName, version, repoOwner, repoName
  */
@@ -20,6 +24,29 @@
   const isDev    = hostname === 'localhost'
                 || hostname === '127.0.0.1'
                 || location.protocol === 'file:';
+  const pinchZoomStorageKey = 'khub-allow-pinch-zoom';
+
+  function readPinchZoomPreference() {
+    try {
+      return localStorage.getItem(pinchZoomStorageKey) === 'true';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function applyViewport(allowPinchZoom) {
+    const viewport = document.getElementById('khub-viewport')
+      || document.querySelector('meta[name="viewport"]');
+
+    if (!viewport) return;
+
+    viewport.setAttribute(
+      'content',
+      allowPinchZoom
+        ? 'width=device-width, initial-scale=1.0, viewport-fit=cover'
+        : 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+    );
+  }
 
   window.KHub = window.KHub || {};
   window.KHub.Config = {
@@ -33,6 +60,22 @@
     env:    isDev ? 'development' : 'production',
     isDev,
     isProd: !isDev,
+
+    // ── Interaction defaults ──────────────────────────────
+    allowPinchZoom: readPinchZoomPreference(),
+    setPinchZoomEnabled(enabled) {
+      const allow = Boolean(enabled);
+      this.allowPinchZoom = allow;
+
+      try {
+        localStorage.setItem(pinchZoomStorageKey, String(allow));
+      } catch (_) {
+        // Storage can be unavailable in private or restricted browser modes.
+      }
+
+      applyViewport(allow);
+      return allow;
+    },
 
     // ── Feature flags ─────────────────────────────────────
     // Set to true to activate. See individual module files for setup steps.
@@ -51,6 +94,8 @@
       if (isDev) console.warn('[KHub]', ...args);
     },
   };
+
+  applyViewport(window.KHub.Config.allowPinchZoom);
 
   if (isDev) {
     console.log(`[KHub] Dev mode — v${window.KHub.Config.version}`);
