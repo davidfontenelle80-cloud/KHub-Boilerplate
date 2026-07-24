@@ -12,79 +12,69 @@
 
 ## Session / worker identity
 
-- **Worker (WHO started it):** Claude Code (AI worker) acting for Supervisor **David Fontenelle**
-- **Model:** claude-opus-4-8 (Claude Opus 4.8)
-- **Session started:** 2026-07-23 09:47 EDT
-- **Supervisor:** David Fontenelle (the only person who approves — see Supervisor Review below)
+- **Worker:** ChatGPT acting for Supervisor **David Fontenelle**
+- **Model:** GPT-5.6 Thinking
+- **Session started:** 2026-07-24 EDT
+- **Supervisor:** David Fontenelle
 
 ## Status
 
 - **Status:** READY FOR REVIEW
-- **% complete:** 100% of implementation (awaiting Supervisor approval — a worker never self-approves)
-- **Confidence:** 95%
+- **% complete:** 100% of implementation; real-device verification remains a deployment approval gate
+- **Confidence:** 90%
 
 ## Objective & task
 
-- **Current objective:** Establish the **AI Session Continuity Standard** in this
-  boilerplate — governance/documentation only, no app code — and package it as a
-  portable, project-agnostic starter kit that all future KHub projects adopt.
-- **Current task:** Author the standard's files, wire them into existing governance
-  (`README.md`, `CLAUDE.md`), and ship a self-contained starter kit plus an adoption note.
-- **Last completed step:** Created every governance file, the portable starter kit under
-  `_ai-session-continuity-standard/`, and the adoption note `docs/AI-SESSION-CONTINUITY-STANDARD.md`;
-  verified internal links and consistency; committed and pushed to `origin/main`.
+- **Current objective:** Make a device-specific push-notification ON/OFF control mandatory and reusable for future notification-enabled KHub apps.
+- **Current task:** Add the generic reference module and the implementation/verification standard without modifying the active boilerplate demo application.
+- **Last completed step:** Added `docs/notifications/reference/push-toggle.js` and its required integration guide. The pattern unsubscribes only the current browser/device, clears only its local subscription ID, creates a fresh subscription when turned back on, and preserves separate Test and Diagnostics actions.
 
-## Files expected to change (this session)
+## Files changed this session
 
-- `.ai/ACTIVE_TASK.md` (this file — new)
-- `.ai/SESSION_TEMPLATE.md` (new)
-- `CONTRIBUTING_AI.md` (new)
-- `README.md` (add "AI Session Continuity Standard" governance section)
-- `CLAUDE.md` (add pointer so every worker is routed to the standard)
-- `docs/AI-SESSION-CONTINUITY-STANDARD.md` (new — adoption note)
-- `_ai-session-continuity-standard/**` (new — portable starter kit)
+- `docs/notifications/reference/push-toggle.js` — reusable configurable ON/OFF module
+- `docs/notifications/reference/README.md` — required behavior, integration steps, status codes, and real-device verification gate
+- `.ai/ACTIVE_TASK.md` — tracker reconciliation
 
 ## Files that MUST NOT change
 
-- Any application source: `js/**`, `css/**`, `index.html`, `sw.js`, `manifest.json`,
-  `icons/**`, `firebase/**`, `scripts/**`, `package.json`, `.env.*`, lint/format configs.
-- Existing docs' technical content: `docs/UX-STANDARDS.md`, `docs/APP-ARCHETYPES.md`,
-  `docs/notifications/**`, `docs/firebase/**`, `SECURITY_FIREBASE.md`, `TEST-CHECKLIST.md`.
-  (This is a **reference-only** repo — governance is additive; no app/business logic here.)
+- Application demo source: `js/**`, `css/**`, `index.html`, `sw.js`, `manifest.json`, `icons/**`, `firebase/**`
+- Existing notification transport reference files and Cloudflare Worker implementation
+- Unrelated governance, templates, and UX standards
+
+## Previous approved stage
+
+- AI Session Continuity Standard governance package: **APPROVED** by Supervisor for the next authorized stage.
 
 ## Next step if interrupted
 
-Implementation is complete and pushed. The only remaining step is **Supervisor review**
-by David. If resuming as a worker: re-read this file top to bottom, run
-`git status` (expect clean) and `git log --oneline -1` (expect the continuity-standard
-commit), confirm `HEAD == origin/main`, and do **not** re-implement — wait for the
-Supervisor Review section below to be filled in.
+Implementation is committed. Verify the two new reference files and confirm the repository head contains the tracker update. Do not add another notification architecture or modify the demo app. The next meaningful action is to validate the corresponding Ministry Tracker implementation on real iPhone/iPad devices, then revise the reference only if that real-device test exposes a defect.
 
 ## Stop condition
 
-Stop once all continuity-standard files exist, links/consistency are verified, the docs
-commit is pushed, the working tree is clean, and `HEAD == origin/main`. Then hand off to
-the Supervisor. **Reached.**
+Stop once the reusable module, required integration instructions, standard status codes, device-isolation rule, and verification matrix are committed and this tracker matches the repo. **Reached.**
 
 ## Verification completed
 
-- [x] All new internal links resolve (relative paths checked against tracked files).
-- [x] No existing governance rule contradicted; additions only.
-- [x] No app code, UI, or business logic added (reference-only rule honored).
-- [x] Responsibility split (Supervisor vs Worker) stated once and not duplicated.
-- [x] `git status` clean; `HEAD == origin/main` after push.
+- [x] OFF targets only the current browser PushSubscription.
+- [x] ON first removes any stale browser subscription and then calls the configured app push API's `subscribe()`.
+- [x] Local storage key is configurable per app.
+- [x] Test notification remains a separate action.
+- [x] Diagnostics remain available through an app callback or `diagnose()` fallback.
+- [x] Stable status codes document permission/subscription state.
+- [x] English and Spanish labels are included.
+- [x] No secrets, VAPID keys, Worker URLs, or production subscription data were added.
+- [x] No KHub demo application source was changed.
 
-## Outstanding assumptions
+## Outstanding assumptions / deployment gate
 
-1. `PROJECT_STATUS.md` is the conventional per-project status file the workflow points to.
-   This reference repo has no app to track, so `README.md` + `CLAUDE.md` serve that role
-   here; the starter kit ships a `PROJECT_STATUS.md` template for real projects.
-2. Terminal worker status is **READY FOR REVIEW** (not COMPLETE) because governance
-   requires Supervisor approval and workers never self-approve.
+1. Each generated app must configure `KHUB_PUSH_TOGGLE_CONFIG` with its own API name, card ID, and localStorage key.
+2. Each app must copy the module into `js/`, load it after configuring it, add it to the service-worker precache, and bump the cache version.
+3. Live approval requires a real-device matrix proving that toggling one device does not affect another device using the same account.
+4. Server-side stale records may remain until the push provider returns 404/410 unless an app adds an explicit server unsubscribe endpoint; they cannot continue delivering after the browser subscription is invalidated.
 
 ## Last updated
 
-- **2026-07-23 09:47 EDT** by Claude Code (claude-opus-4-8)
+- **2026-07-24 EDT** by ChatGPT (GPT-5.6 Thinking)
 
 ---
 
@@ -93,7 +83,6 @@ the Supervisor. **Reached.**
 > **Only the Supervisor (David) edits this section. Workers never self-approve.**
 
 - **Review status:** NOT REVIEWED
-  <!-- One of: NOT REVIEWED / APPROVED / APPROVED WITH OBSERVATIONS / REQUIRES CHANGES / BLOCKED -->
 - **Reviewed by:**
 - **Reviewed at:**
 - **Observations / required changes:**
