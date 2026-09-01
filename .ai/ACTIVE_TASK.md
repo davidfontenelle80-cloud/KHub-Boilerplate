@@ -12,69 +12,59 @@
 
 ## Session / worker identity
 
-- **Worker:** ChatGPT acting for Supervisor **David Fontenelle**
-- **Model:** GPT-5.6 Thinking
-- **Session started:** 2026-07-24 EDT
+- **Worker:** Claude (Cowork) acting for Supervisor **David Fontenelle**
+- **Model:** Claude Opus 4.8
+- **Session started:** 2026-09-01 EDT
 - **Supervisor:** David Fontenelle
 
 ## Status
 
 - **Status:** READY FOR REVIEW
-- **% complete:** 100% of implementation; real-device verification remains a deployment approval gate
-- **Confidence:** 90%
+- **% complete:** 100% of implementation; CI will exercise it on the next push/PR
+- **Confidence:** 95%
 
 ## Objective & task
 
-- **Current objective:** Make a device-specific push-notification ON/OFF control mandatory and reusable for future notification-enabled KHub apps.
-- **Current task:** Add the generic reference module and the implementation/verification standard without modifying the active boilerplate demo application.
-- **Last completed step:** Added `docs/notifications/reference/push-toggle.js` and its required integration guide. The pattern unsubscribes only the current browser/device, clears only its local subscription ID, creates a fresh subscription when turned back on, and preserves separate Test and Diagnostics actions.
+- **Current objective:** Prevent the double-encoded-UTF-8 (mojibake) class of bug from ever reaching a KHub app again, and give every app a build-time guard against it.
+- **Current task:** Add a zero-dependency encoding guard to the boilerplate, wire it into the npm `check` and test suite, and add a GitHub Actions workflow. This is infra/tooling only — no demo app code touched.
+- **Last completed step:** Added `scripts/check-encoding.mjs`, `tests/encoding.test.mjs`, `.github/workflows/encoding-check.yml`, and a `check:encoding` npm script folded into `check`. Verified clean on the whole repo (71 files) and all 17 tests pass.
+
+## Background (why)
+
+On 2026-09-01, `Talk-Arrangements-Public/js/app.js` was found to be double-encoded UTF-8: original UTF-8 bytes had been decoded as Latin-1 and re-saved, corrupting event-type emoji, box-drawing comment dividers, check/warning glyphs, and Spanish accents. It surfaced as garbled orange text in the running app. A sweep of the suite found the same corruption in `note-clip` (`js/notes.js`, `settings.js`, `theme.js`) and one `ministry-tracker-` docs file. All were fixed. This guard exists so the regression is caught mechanically, not by eye.
 
 ## Files changed this session
 
-- `docs/notifications/reference/push-toggle.js` — reusable configurable ON/OFF module
-- `docs/notifications/reference/README.md` — required behavior, integration steps, status codes, and real-device verification gate
-- `.ai/ACTIVE_TASK.md` — tracker reconciliation
+- `scripts/check-encoding.mjs` — reusable, dependency-free scanner that flags C1 control code points (U+0080–U+009F) and U+FFFD, the reliable signatures of double-encoded UTF-8. Runs as `node scripts/check-encoding.mjs .`
+- `tests/encoding.test.mjs` — asserts the repo is clean and that the scanner detects mojibake and the replacement character (samples built from escapes so this file stays clean).
+- `.github/workflows/encoding-check.yml` — CI that runs the scanner on push/PR/dispatch, on bare node (no install), so it drops into any app repo.
+- `package.json` — added `check:encoding` and folded it into `check`.
+- `.ai/ACTIVE_TASK.md` — this tracker update.
 
 ## Files that MUST NOT change
 
 - Application demo source: `js/**`, `css/**`, `index.html`, `sw.js`, `manifest.json`, `icons/**`, `firebase/**`
-- Existing notification transport reference files and Cloudflare Worker implementation
-- Unrelated governance, templates, and UX standards
-
-## Previous approved stage
-
-- AI Session Continuity Standard governance package: **APPROVED** by Supervisor for the next authorized stage.
+- Existing governance, templates, UX standards, and the `khub-check.mjs` ship check
 
 ## Next step if interrupted
 
-Implementation is committed. Verify the two new reference files and confirm the repository head contains the tracker update. Do not add another notification architecture or modify the demo app. The next meaningful action is to validate the corresponding Ministry Tracker implementation on real iPhone/iPad devices, then revise the reference only if that real-device test exposes a defect.
+Implementation is committed. Confirm the encoding-check workflow runs green on the next push. The same guard (`scripts/check-encoding.mjs` + `.github/workflows/encoding-check.yml`) is being rolled out to the suite apps (Talk-Arrangements-Public, note-clip, ministry-tracker-, Overtime-Tracker-).
 
 ## Stop condition
 
-Stop once the reusable module, required integration instructions, standard status codes, device-isolation rule, and verification matrix are committed and this tracker matches the repo. **Reached.**
+Stop once the guard script, its test, the CI workflow, and the npm wiring are committed, the repo scan is clean, and this tracker matches the repo. **Reached.**
 
 ## Verification completed
 
-- [x] OFF targets only the current browser PushSubscription.
-- [x] ON first removes any stale browser subscription and then calls the configured app push API's `subscribe()`.
-- [x] Local storage key is configurable per app.
-- [x] Test notification remains a separate action.
-- [x] Diagnostics remain available through an app callback or `diagnose()` fallback.
-- [x] Stable status codes document permission/subscription state.
-- [x] English and Spanish labels are included.
-- [x] No secrets, VAPID keys, Worker URLs, or production subscription data were added.
-- [x] No KHub demo application source was changed.
-
-## Outstanding assumptions / deployment gate
-
-1. Each generated app must configure `KHUB_PUSH_TOGGLE_CONFIG` with its own API name, card ID, and localStorage key.
-2. Each app must copy the module into `js/`, load it after configuring it, add it to the service-worker precache, and bump the cache version.
-3. Live approval requires a real-device matrix proving that toggling one device does not affect another device using the same account.
-4. Server-side stale records may remain until the push provider returns 404/410 unless an app adds an explicit server unsubscribe endpoint; they cannot continue delivering after the browser subscription is invalidated.
+- [x] `node scripts/check-encoding.mjs .` reports clean on the full repo.
+- [x] `node --test tests/*.test.mjs` passes (17/17), including the new encoding tests.
+- [x] Scanner flags C1 control code points and U+FFFD; ignores legit emoji/accents.
+- [x] Guard runs with zero dependencies (works in app repos without package.json).
+- [x] No demo app source changed.
 
 ## Last updated
 
-- **2026-07-24 EDT** by ChatGPT (GPT-5.6 Thinking)
+- **2026-09-01 EDT** by Claude (Cowork)
 
 ---
 

@@ -10,8 +10,9 @@
     "format": "prettier --write \"**/*.{html,css,js,mjs,json,md}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{html,css,js,mjs,json,md}\" --ignore-path .prettierignore",
     "test": "node --test tests/*.test.mjs",
+    "check:encoding": "node scripts/check-encoding.mjs .",
     "ship-check": "node scripts/khub-check.mjs .",
-    "check": "npm run lint && npm run format:check && npm test && npm run ship-check"
+    "check": "npm run check:encoding && npm run lint && npm run format:check && npm test && npm run ship-check"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
