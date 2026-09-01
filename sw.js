@@ -1,29 +1,18 @@
 /**
- * sw.js — KHub Boilerplate
- * Version: network-first shortcut refresh
+ * KHub service worker.
  *
- * Responsibilities:
- *  1. Precache the app shell on install
- *  2. Serve app-shell files network-first, with cache as offline fallback
- *  3. Purge old caches on activate
- *  4. skipWaiting on install so shortcuts refresh quickly
- *  5. Broadcast RELOAD_READY to all clients after activation
- *
- * Update-check timing (12-hour interval) is owned by the page (app.js)
- * because the SW can be suspended by the browser at any time.
- * The page calls registration.update() → browser re-fetches sw.js →
- * if content changed, new SW installs → page receives 'updatefound' →
- * shows banner or quietly reloads depending on "safe" state.
- *
- * BUMP THIS VERSION STRING on every deploy that changes HTML, CSS, JS, manifest, or SW behavior.
+ * Keep CACHE_PREFIX unique to the generated app. Required shell installation is
+ * atomic: a missing required asset aborts the new worker and leaves the prior
+ * complete worker in control.
  */
 
-const CACHE_VERSION = 'khub-boilerplate-v20-pinch-zoom-default-off';
+const CACHE_PREFIX = 'khub-boilerplate-';
+const CACHE_VERSION = `${CACHE_PREFIX}v21-consolidated-infrastructure`;
 
-/**
- * All URLs that make up the app shell.
- * Add any new JS/CSS files here when you create them.
- */
+// Historical prefixes owned by this app only. Add a prefix here when an existing
+// deployed app is renamed; never add another app's prefix.
+const OBSOLETE_CACHE_PREFIXES = [];
+
 const PRECACHE_URLS = [
   './',
   './index.html',
@@ -44,72 +33,125 @@ const PRECACHE_URLS = [
   './js/components/card.js',
   './js/components/input.js',
   './js/perf.js',
+  './js/sw-manager.js',
   './js/app.js',
+  './icons/favicon.svg',
+  './icons/icon-72.png',
+  './icons/icon-96.png',
+  './icons/icon-128.png',
+  './icons/icon-144.png',
+  './icons/icon-152.png',
+  './icons/icon-192.png',
+  './icons/icon-384.png',
+  './icons/icon-512.png',
 ];
 
-// ── Install ──────────────────────────────────────────────────
-self.addEventListener('install', event => {
+const OFFLINE_DOCUMENT_URLS = ['./index.html', './'];
+
+function pathFor(value) {
+  return new URL(value, self.location.href).pathname;
+}
+
+function isOwnedCache(key) {
+  return (
+    key.startsWith(CACHE_PREFIX) || OBSOLETE_CACHE_PREFIXES.some((prefix) => key.startsWith(prefix))
+  );
+}
+
+function isPrecachedPath(url) {
+  return PRECACHE_URLS.some((path) => pathFor(path) === url.pathname);
+}
+
+function isDocumentRequest(request) {
+  return request.mode === 'navigate' || request.destination === 'document';
+}
+
+async function cacheSuccessfulResponse(request, response) {
+  if (response && response.status === 200 && response.type === 'basic') {
+    const cache = await caches.open(CACHE_VERSION);
+    await cache.put(request, response.clone());
+  }
+  return response;
+}
+
+async function cachedOfflineDocument(request) {
+  const exact = await caches.match(request);
+  if (exact) return exact;
+
+  for (const path of OFFLINE_DOCUMENT_URLS) {
+    const fallback = await caches.match(new URL(path, self.location.href).href);
+    if (fallback) return fallback;
+  }
+
+  return Response.error();
+}
+
+async function handleDocumentRequest(request) {
+  try {
+    return await cacheSuccessfulResponse(request, await fetch(request));
+  } catch (_) {
+    return cachedOfflineDocument(request);
+  }
+}
+
+async function handleAssetRequest(request) {
+  try {
+    return await cacheSuccessfulResponse(request, await fetch(request));
+  } catch (_) {
+    // Exact-request fallback only. Never return index.html for an asset.
+    return (await caches.match(request)) || Response.error();
+  }
+}
+
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION)
-      .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(() => {
-        self.skipWaiting();
-        console.log('[KHub SW] Installed — skipping wait, activating immediately.');
+    caches
+      .open(CACHE_VERSION)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
+      .catch((error) => {
+        console.error('[KHub SW] Atomic shell install failed:', error);
+        throw error;
       })
-      .catch(err => console.error('[KHub SW] Install failed:', err))
   );
 });
 
-// ── Activate ─────────────────────────────────────────────────
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys
-          .filter(key => key !== CACHE_VERSION)
-          .map(key => {
-            console.log('[KHub SW] Deleting old cache:', key);
-            return caches.delete(key);
-          })
-      ))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_VERSION && isOwnedCache(key))
+            .map((key) => caches.delete(key))
+        )
+      )
       .then(() => self.clients.claim())
-      .then(() => {
-        self.clients.matchAll({ type: 'window' }).then(clients => {
-          clients.forEach(client => client.postMessage({ type: 'RELOAD_READY' }));
-        });
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => {
+        clients.forEach((client) => client.postMessage({ type: 'RELOAD_READY' }));
       })
   );
 });
 
-// Strategy: network-first for app shell, network-only for everything else.
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
+  const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  const isAppShell = PRECACHE_URLS.some(path => new URL(path, self.location.href).pathname === url.pathname);
-  if (!isAppShell) return;
+  if (isDocumentRequest(request)) {
+    event.respondWith(handleDocumentRequest(request));
+    return;
+  }
 
-  event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const cloned = response.clone();
-          caches.open(CACHE_VERSION).then(cache => cache.put(event.request, cloned));
-        }
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  if (isPrecachedPath(url)) {
+    event.respondWith(handleAssetRequest(request));
+  }
 });
 
-// ── Messages ─────────────────────────────────────────────────
-self.addEventListener('message', event => {
-  if (!event.data) return;
-
-  if (event.data.type === 'SKIP_WAITING') {
-    console.log('[KHub SW] SKIP_WAITING received — activating new version.');
-    self.skipWaiting();
-  }
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });

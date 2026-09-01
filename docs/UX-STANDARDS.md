@@ -54,7 +54,11 @@ distort the installed-app interface.
 - **Required default viewport tag:**
 
   ```html
-  <meta id="khub-viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta
+    id="khub-viewport"
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
   ```
 
 - Responsive CSS and breakpoints must remain independent from zoom. Disabling
@@ -72,6 +76,7 @@ distort the installed-app interface.
   ```
 
   The preference is stored per app in `localStorage` and applied at startup.
+
 - Settings copy should clearly explain that enabling pinch zoom can temporarily
   enlarge or shift the interface and that responsive sizing remains automatic.
 - **Inputs:** every input, select, and textarea must have a computed font-size
@@ -101,11 +106,11 @@ Classify **every visible control** as exactly one of:
 
 - Mobile persistent navigation contains **no more than five destinations**.
 - Settings, import, export, backup, print, and reset are utilities or
-actions — they do not get navigation slots unless they are genuinely
-daily destinations for that app.
+  actions — they do not get navigation slots unless they are genuinely
+  daily destinations for that app.
 - Destructive actions never receive the same placement or prominence as
-routine actions, and confirmations name the thing being changed
-(see `CLAUDE.md` labeling rule).
+  routine actions, and confirmations name the thing being changed
+  (see `CLAUDE.md` labeling rule).
 - Do not create a top-level tab merely because a feature has its own screen.
 
 ### Example (documentation illustration — Finance Tracker)
@@ -128,6 +133,11 @@ Every import or restore flow must follow this sequence:
 2. Validate file structure.
 3. Show a preview of affected data and record counts.
 4. Identify overwrite, merge, duplicate, and conflict behavior.
+   Every collection must display exactly one policy in the preview:
+   - `replace`: imported collection becomes authoritative.
+   - `merge`: combine records using a documented identity key.
+   - `preserve-local-fields`: import records while retaining named local-only fields.
+   - `reject-on-conflict`: block apply until every conflict is resolved.
 5. Create a local pre-import recovery snapshot.
 6. Require explicit confirmation.
 7. Perform the import.
@@ -144,14 +154,26 @@ file selection. Steps 2–6 always come first.
 KHub apps are installable PWAs; the main task must work offline.
 
 - Every runtime dependency (frameworks, icon fonts, web fonts, SDKs,
-spreadsheet libraries) is either self-hosted and precached, or the app
-demonstrably completes its main task without it.
-- A cold offline launch after installation must render the app and allow
-its primary task to complete.
-- Provide a fallback font stack — missing network fonts must not block the UI.
+  spreadsheet libraries) is either self-hosted and precached, or the app
+  demonstrably completes its main task without it.
+- Required frameworks, compiled bundles, libraries, icons, and custom fonts are
+  same-origin and part of the atomic required-shell precache.
+- A cold offline launch **after one successful service-worker installation and
+  cache population** must render the app and allow
+  its primary task to complete.
+- Custom web fonts may be omitted. If used by the offline experience, self-host them,
+  use `font-display: swap`, and provide a system fallback stack.
+- Record each vendored dependency's exact version, source, license, update procedure,
+  and reproducible build inputs in `docs/DEPENDENCY-INVENTORY.md`.
+- Network-only dependencies are allowed only when their absence cannot block the
+  primary offline task.
 - When precache contents change, bump `CACHE_VERSION` in `sw.js` and clean
-up old caches in the `activate` handler, or installed users never receive
-the new assets.
+  up only caches owned by the app's stable unique cache prefix. Historical prefixes
+  must be explicitly listed; never delete every origin cache.
+
+Document/navigation failures may use the cached offline document. Failed scripts,
+styles, fonts, images, and other assets must receive only their exact cached response
+or a network error—never HTML.
 
 ---
 

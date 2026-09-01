@@ -1,5 +1,5 @@
 /*
- * Ministry Tracker Push Worker — Stage I
+ * KHub notification/reminder reference worker
  *
  * Required env bindings:
  * - PUSH_STORE: KV namespace binding
@@ -9,7 +9,7 @@
  * - ALLOWED_ORIGIN: https://davidfontenelle80-cloud.github.io
  */
 
-const APP_ID = 'ministry-tracker';
+const DEFAULT_APP_ID = 'khub-app';
 const DEFAULT_ALLOWED_ORIGIN = 'https://davidfontenelle80-cloud.github.io';
 const DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 28;
 const WEB_PUSH_RS = 4096;
@@ -50,14 +50,27 @@ async function readJson(request) {
   }
 }
 
-function assertApp(data) {
-  if (data && data.app && data.app !== APP_ID) throw new Error('Unsupported app.');
+function appId(env) {
+  return String(env.APP_ID || DEFAULT_APP_ID).trim();
+}
+
+function appPath(env) {
+  return String(env.APP_PATH || '/').trim();
+}
+
+function assertApp(data, env) {
+  if (data && data.app && data.app !== appId(env)) throw new Error('Unsupported app.');
 }
 
 function makeSubscriptionId(subscription) {
   const endpoint = subscription && subscription.endpoint ? String(subscription.endpoint) : '';
   if (!endpoint) throw new Error('Subscription endpoint is required.');
-  return 'sub_' + btoa(endpoint).replace(/[^a-zA-Z0-9]/g, '').slice(-32);
+  return (
+    'sub_' +
+    btoa(endpoint)
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .slice(-32)
+  );
 }
 
 function reminderKey(subscriptionId, sourceType, sourceId) {
@@ -79,9 +92,13 @@ async function addReminderToDueBucket(store, minute, key) {
   const current = await store.get(bucketKey, 'json').catch(() => null);
   const keys = Array.isArray(current && current.keys) ? current.keys : [];
   if (!keys.includes(key)) keys.push(key);
-  await store.put(bucketKey, JSON.stringify({ minute, keys, updatedAt: new Date().toISOString() }), {
-    expirationTtl: DEFAULT_TTL_SECONDS,
-  });
+  await store.put(
+    bucketKey,
+    JSON.stringify({ minute, keys, updatedAt: new Date().toISOString() }),
+    {
+      expirationTtl: DEFAULT_TTL_SECONDS,
+    }
+  );
 }
 
 function dueBucketMinutesToCheck(now = new Date()) {
@@ -115,7 +132,9 @@ function textBytes(value) {
 }
 
 function concatBytes() {
-  const parts = Array.prototype.slice.call(arguments).map(part => part instanceof Uint8Array ? part : new Uint8Array(part));
+  const parts = Array.prototype.slice
+    .call(arguments)
+    .map((part) => (part instanceof Uint8Array ? part : new Uint8Array(part)));
   const total = parts.reduce((sum, part) => sum + part.length, 0);
   const out = new Uint8Array(total);
   let offset = 0;
@@ -127,8 +146,11 @@ function concatBytes() {
 }
 
 function base64UrlToBytes(value) {
-  const normalized = String(value || '').trim().replace(/-/g, '+').replace(/_/g, '/');
-  const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+  const normalized = String(value || '')
+    .trim()
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
   const binary = atob(padded);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
@@ -143,7 +165,13 @@ function bytesToBase64Url(bytes) {
 }
 
 async function hmac(keyBytes, dataBytes) {
-  const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyBytes,
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
   return new Uint8Array(await crypto.subtle.sign('HMAC', key, dataBytes));
 }
 
@@ -178,14 +206,20 @@ function importVapidSigningKey(env) {
   if (privateKey.length !== 32) {
     throw new Error('VAPID_PRIVATE_KEY must be a base64url P-256 private scalar.');
   }
-  return crypto.subtle.importKey('jwk', {
-    kty: 'EC',
-    crv: 'P-256',
-    x: bytesToBase64Url(publicKey.slice(1, 33)),
-    y: bytesToBase64Url(publicKey.slice(33, 65)),
-    d: bytesToBase64Url(privateKey),
-    ext: false,
-  }, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']);
+  return crypto.subtle.importKey(
+    'jwk',
+    {
+      kty: 'EC',
+      crv: 'P-256',
+      x: bytesToBase64Url(publicKey.slice(1, 33)),
+      y: bytesToBase64Url(publicKey.slice(33, 65)),
+      d: bytesToBase64Url(privateKey),
+      ext: false,
+    },
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
 }
 
 function normalizeEcdsaSignature(signature) {
@@ -209,27 +243,44 @@ function normalizeEcdsaSignature(signature) {
 
 async function createVapidJwt(endpoint, env) {
   const header = bytesToBase64Url(textBytes(JSON.stringify({ typ: 'JWT', alg: 'ES256' })));
-  const claims = bytesToBase64Url(textBytes(JSON.stringify({
-    aud: subscriptionEndpointOrigin(endpoint),
-    exp: Math.floor(Date.now() / 1000) + (12 * 60 * 60),
-    sub: env.VAPID_SUBJECT,
-  })));
+  const claims = bytesToBase64Url(
+    textBytes(
+      JSON.stringify({
+        aud: subscriptionEndpointOrigin(endpoint),
+        exp: Math.floor(Date.now() / 1000) + 12 * 60 * 60,
+        sub: env.VAPID_SUBJECT,
+      })
+    )
+  );
   const signingInput = `${header}.${claims}`;
   const key = await importVapidSigningKey(env);
-  const signature = normalizeEcdsaSignature(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, textBytes(signingInput)));
+  const signature = normalizeEcdsaSignature(
+    await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, key, textBytes(signingInput))
+  );
   return `${signingInput}.${bytesToBase64Url(signature)}`;
 }
 
 async function encryptPushPayload(subscription, payload) {
   const uaPublic = base64UrlToBytes(subscription.keys && subscription.keys.p256dh);
   const authSecret = base64UrlToBytes(subscription.keys && subscription.keys.auth);
-  if (uaPublic.length !== 65 || uaPublic[0] !== 4) throw new Error('Subscription p256dh key is invalid.');
+  if (uaPublic.length !== 65 || uaPublic[0] !== 4)
+    throw new Error('Subscription p256dh key is invalid.');
   if (authSecret.length !== 16) throw new Error('Subscription auth secret is invalid.');
 
-  const asKeys = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveBits']);
+  const asKeys = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, [
+    'deriveBits',
+  ]);
   const asPublic = new Uint8Array(await crypto.subtle.exportKey('raw', asKeys.publicKey));
-  const uaKey = await crypto.subtle.importKey('raw', uaPublic, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
-  const ecdhSecret = new Uint8Array(await crypto.subtle.deriveBits({ name: 'ECDH', public: uaKey }, asKeys.privateKey, 256));
+  const uaKey = await crypto.subtle.importKey(
+    'raw',
+    uaPublic,
+    { name: 'ECDH', namedCurve: 'P-256' },
+    false,
+    []
+  );
+  const ecdhSecret = new Uint8Array(
+    await crypto.subtle.deriveBits({ name: 'ECDH', public: uaKey }, asKeys.privateKey, 256)
+  );
 
   const keyInfo = concatBytes(textBytes('WebPush: info'), new Uint8Array([0]), uaPublic, asPublic);
   const prkKey = await hkdfExtract(authSecret, ecdhSecret);
@@ -237,45 +288,69 @@ async function encryptPushPayload(subscription, payload) {
 
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const prk = await hkdfExtract(salt, ikm);
-  const cek = await hkdfExpand(prk, concatBytes(textBytes('Content-Encoding: aes128gcm'), new Uint8Array([0])), 16);
-  const nonce = await hkdfExpand(prk, concatBytes(textBytes('Content-Encoding: nonce'), new Uint8Array([0])), 12);
+  const cek = await hkdfExpand(
+    prk,
+    concatBytes(textBytes('Content-Encoding: aes128gcm'), new Uint8Array([0])),
+    16
+  );
+  const nonce = await hkdfExpand(
+    prk,
+    concatBytes(textBytes('Content-Encoding: nonce'), new Uint8Array([0])),
+    12
+  );
 
   const plaintext = concatBytes(textBytes(JSON.stringify(payload)), new Uint8Array([2]));
   if (plaintext.length + 16 >= WEB_PUSH_RS) throw new Error('Push payload is too large.');
   const aesKey = await crypto.subtle.importKey('raw', cek, 'AES-GCM', false, ['encrypt']);
-  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, aesKey, plaintext));
+  const ciphertext = new Uint8Array(
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, aesKey, plaintext)
+  );
 
-  return concatBytes(salt, uint32Bytes(WEB_PUSH_RS), new Uint8Array([asPublic.length]), asPublic, ciphertext);
+  return concatBytes(
+    salt,
+    uint32Bytes(WEB_PUSH_RS),
+    new Uint8Array([asPublic.length]),
+    asPublic,
+    ciphertext
+  );
 }
 
 async function handleHealth(request, env) {
-  return json({
-    ok: true,
-    app: APP_ID,
-    hasStore: !!env.PUSH_STORE,
-    hasVapidPublicKey: !!env.VAPID_PUBLIC_KEY,
-    hasVapidPrivateKey: !!env.VAPID_PRIVATE_KEY,
-    hasVapidSubject: !!env.VAPID_SUBJECT,
-    webPushDeliveryImplemented: true,
-    dueBucketScheduler: true,
-  }, 200, corsHeaders(request, env));
+  return json(
+    {
+      ok: true,
+      app: appId(env),
+      hasStore: !!env.PUSH_STORE,
+      hasVapidPublicKey: !!env.VAPID_PUBLIC_KEY,
+      hasVapidPrivateKey: !!env.VAPID_PRIVATE_KEY,
+      hasVapidSubject: !!env.VAPID_SUBJECT,
+      webPushDeliveryImplemented: true,
+      dueBucketScheduler: true,
+    },
+    200,
+    corsHeaders(request, env)
+  );
 }
 
 async function handleSubscribe(request, env) {
   const headers = corsHeaders(request, env);
   const store = requireStore(env);
   const data = await readJson(request);
-  assertApp(data);
+  assertApp(data, env);
 
   if (!data.subscription || !data.subscription.endpoint || !data.subscription.keys) {
-    return json({ ok: false, error: 'subscription.endpoint and subscription.keys are required.' }, 400, headers);
+    return json(
+      { ok: false, error: 'subscription.endpoint and subscription.keys are required.' },
+      400,
+      headers
+    );
   }
 
   const id = makeSubscriptionId(data.subscription);
   const now = new Date().toISOString();
   const record = {
     id,
-    app: APP_ID,
+    app: appId(env),
     subscription: data.subscription,
     userAgent: data.userAgent || '',
     createdAt: now,
@@ -290,7 +365,7 @@ async function handleUpsertReminder(request, env) {
   const headers = corsHeaders(request, env);
   const store = requireStore(env);
   const data = await readJson(request);
-  assertApp(data);
+  assertApp(data, env);
 
   const subscriptionId = String(data.subscriptionId || '').trim();
   const sourceType = String(data.sourceType || 'ministry-note').trim();
@@ -298,7 +373,11 @@ async function handleUpsertReminder(request, env) {
   const fireAt = String(data.fireAt || '').trim();
 
   if (!subscriptionId || !sourceType || !sourceId || !fireAt) {
-    return json({ ok: false, error: 'subscriptionId, sourceType, sourceId, and fireAt are required.' }, 400, headers);
+    return json(
+      { ok: false, error: 'subscriptionId, sourceType, sourceId, and fireAt are required.' },
+      400,
+      headers
+    );
   }
 
   const subscription = await store.get(`subscription:${subscriptionId}`, 'json');
@@ -308,15 +387,15 @@ async function handleUpsertReminder(request, env) {
   const key = reminderKey(subscriptionId, sourceType, sourceId);
   const bucketMinute = dueBucketMinute(fireAt);
   const record = {
-    app: APP_ID,
+    app: appId(env),
     subscriptionId,
     sourceType,
     sourceId,
-    title: String(data.title || 'Ministry Tracker Reminder'),
+    title: String(data.title || 'Reminder'),
     body: String(data.body || ''),
     fireAt,
     dueBucketMinute: bucketMinute,
-    url: data.url || '/ministry-tracker-/',
+    url: data.url || appPath(env),
     createdAt: now,
     updatedAt: now,
   };
@@ -335,15 +414,22 @@ async function handleDeleteReminder(request, env, pathname) {
   const url = new URL(request.url);
   const subscriptionId = url.searchParams.get('subscriptionId') || '';
 
-  if (!sourceType || !sourceId) return json({ ok: false, error: 'sourceType and sourceId are required.' }, 400, headers);
-  if (!subscriptionId) return json({ ok: false, error: 'subscriptionId is required to delete a reminder.' }, 400, headers);
+  if (!sourceType || !sourceId)
+    return json({ ok: false, error: 'sourceType and sourceId are required.' }, 400, headers);
+  if (!subscriptionId)
+    return json(
+      { ok: false, error: 'subscriptionId is required to delete a reminder.' },
+      400,
+      headers
+    );
 
   await store.delete(reminderKey(subscriptionId, sourceType, sourceId));
   return json({ ok: true, deleted: 1 }, 200, headers);
 }
 
 async function sendWebPush(subscription, payload, env) {
-  if (!subscription || !subscription.endpoint) throw new Error('Subscription endpoint is required.');
+  if (!subscription || !subscription.endpoint)
+    throw new Error('Subscription endpoint is required.');
   if (!subscription.keys || !subscription.keys.p256dh || !subscription.keys.auth) {
     throw new Error('Subscription p256dh/auth keys are required.');
   }
@@ -363,7 +449,9 @@ async function sendWebPush(subscription, payload, env) {
 
   if (!response.ok) {
     const message = await response.text().catch(() => '');
-    const error = new Error(`Push service rejected notification (${response.status}).${message ? ' ' + message.slice(0, 240) : ''}`);
+    const error = new Error(
+      `Push service rejected notification (${response.status}).${message ? ' ' + message.slice(0, 240) : ''}`
+    );
     error.status = response.status;
     throw error;
   }
@@ -375,62 +463,109 @@ async function handleTestPush(request, env) {
   const headers = corsHeaders(request, env);
   const store = requireStore(env);
   const data = await readJson(request);
-  assertApp(data);
+  assertApp(data, env);
 
   const subscriptionId = String(data.subscriptionId || '').trim();
-  if (!subscriptionId) return json({ ok: false, error: 'subscriptionId is required.' }, 400, headers);
+  if (!subscriptionId)
+    return json({ ok: false, error: 'subscriptionId is required.' }, 400, headers);
 
   const subRecord = await store.get(`subscription:${subscriptionId}`, 'json');
   if (!subRecord) return json({ ok: false, error: 'Unknown subscriptionId.' }, 404, headers);
 
   const payload = {
-    title: data.title || 'Ministry Tracker',
+    title: data.title || 'Reminder',
     body: data.body || 'Test reminder notification',
     sourceType: 'test-push',
     sourceId: crypto.randomUUID(),
-    url: '/ministry-tracker-/',
+    url: appPath(env),
   };
 
-  const result = await sendWebPush(subRecord.subscription, payload, env);
-  return json({ ok: true, result }, 200, headers);
+  try {
+    const result = await sendWebPush(subRecord.subscription, payload, env);
+    return json({ ok: true, result }, 200, headers);
+  } catch (error) {
+    if (error && (error.status === 404 || error.status === 410)) {
+      const orphanRemindersDeleted = await deleteDeadSubscription(store, subscriptionId);
+      return json({ ok: false, deadSubscriptionDeleted: 1, orphanRemindersDeleted }, 410, headers);
+    }
+    throw error;
+  }
 }
 
-async function processDueReminders(env) {
+async function deleteReminderPrefix(store, subscriptionId) {
+  const prefix = `reminder:${subscriptionId}:`;
+  let cursor;
+  let deleted = 0;
+  do {
+    const page = await store.list({ prefix, cursor });
+    for (const key of page.keys || []) {
+      await store.delete(key.name);
+      deleted += 1;
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  return deleted;
+}
+
+async function deleteDeadSubscription(store, subscriptionId) {
+  await store.delete(`subscription:${subscriptionId}`);
+  return deleteReminderPrefix(store, subscriptionId);
+}
+
+async function processDueReminders(env, dependencies = {}) {
   const store = requireStore(env);
-  const nowIso = new Date().toISOString();
+  const send = dependencies.sendWebPush || sendWebPush;
+  const nowIso = (dependencies.now || new Date()).toISOString();
   const due = await getDueReminderEntries(store, nowIso);
-  const results = [];
+  const counters = {
+    due: due.length,
+    sent: 0,
+    failed: 0,
+    deadSubscriptionsDeleted: 0,
+    orphanRemindersDeleted: 0,
+  };
 
   for (const entry of due) {
     const reminder = entry.item;
     try {
       const subRecord = await store.get(`subscription:${reminder.subscriptionId}`, 'json');
-      if (!subRecord) throw new Error('Missing subscription record.');
-      await sendWebPush(subRecord.subscription, {
-        title: reminder.title,
-        body: reminder.body,
-        sourceType: reminder.sourceType,
-        sourceId: reminder.sourceId,
-        url: reminder.url || '/ministry-tracker-/',
-      }, env);
+      if (!subRecord) {
+        await store.delete(entry.key);
+        counters.orphanRemindersDeleted += 1;
+        continue;
+      }
+      await send(
+        subRecord.subscription,
+        {
+          title: reminder.title,
+          body: reminder.body,
+          sourceType: reminder.sourceType,
+          sourceId: reminder.sourceId,
+          url: reminder.url || appPath(env),
+        },
+        env
+      );
       reminder.sentAt = new Date().toISOString();
       await store.put(entry.key, JSON.stringify(reminder), { expirationTtl: DEFAULT_TTL_SECONDS });
-      results.push({ key: entry.key, ok: true });
+      counters.sent += 1;
     } catch (error) {
       if (error && (error.status === 404 || error.status === 410)) {
-        await store.delete(`subscription:${reminder.subscriptionId}`);
-        await store.delete(entry.key);
-        results.push({ key: entry.key, ok: false, deleted: true, error: error.message });
+        counters.orphanRemindersDeleted += await deleteDeadSubscription(
+          store,
+          reminder.subscriptionId
+        );
+        counters.deadSubscriptionsDeleted += 1;
         continue;
       }
       reminder.lastError = error.message;
       reminder.lastAttemptAt = new Date().toISOString();
       await store.put(entry.key, JSON.stringify(reminder), { expirationTtl: DEFAULT_TTL_SECONDS });
-      results.push({ key: entry.key, ok: false, error: error.message });
+      counters.failed += 1;
     }
   }
 
-  return results;
+  console.log(JSON.stringify({ event: 'khub-push-run', app: appId(env), ...counters }));
+  return counters;
 }
 
 async function route(request, env) {
@@ -440,11 +575,16 @@ async function route(request, env) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
 
   try {
-    if (request.method === 'GET' && url.pathname === '/api/health') return handleHealth(request, env);
-    if (request.method === 'POST' && url.pathname === '/api/subscribe') return handleSubscribe(request, env);
-    if (request.method === 'POST' && url.pathname === '/api/reminders') return handleUpsertReminder(request, env);
-    if (request.method === 'DELETE' && url.pathname.startsWith('/api/reminders/')) return handleDeleteReminder(request, env, url.pathname);
-    if (request.method === 'POST' && url.pathname === '/api/test-push') return handleTestPush(request, env);
+    if (request.method === 'GET' && url.pathname === '/api/health')
+      return handleHealth(request, env);
+    if (request.method === 'POST' && url.pathname === '/api/subscribe')
+      return handleSubscribe(request, env);
+    if (request.method === 'POST' && url.pathname === '/api/reminders')
+      return handleUpsertReminder(request, env);
+    if (request.method === 'DELETE' && url.pathname.startsWith('/api/reminders/'))
+      return handleDeleteReminder(request, env, url.pathname);
+    if (request.method === 'POST' && url.pathname === '/api/test-push')
+      return handleTestPush(request, env);
 
     return json({ ok: false, error: 'Not found.' }, 404, headers);
   } catch (error) {
@@ -458,3 +598,5 @@ export default {
     ctx.waitUntil(processDueReminders(env));
   },
 };
+
+export { deleteDeadSubscription, processDueReminders };

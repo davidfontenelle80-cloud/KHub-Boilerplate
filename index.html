@@ -1,153 +1,161 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta id="khub-viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="description" content="KHub Boilerplate — reusable vanilla PWA starter" />
-  <meta name="theme-color" content="#0b0d12" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      id="khub-viewport"
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="description" content="KHub Boilerplate — reusable vanilla PWA starter" />
+    <meta name="theme-color" content="#0b0d12" />
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="icons/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/dark-mode.css" />
-  <link rel="stylesheet" href="css/components.css" />
-  <link rel="stylesheet" href="css/responsive.css" />
-  <link rel="stylesheet" href="css/main.css" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/dark-mode.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/main.css" />
 
-  <title>KHub App</title>
-</head>
-<body>
+    <title>KHub App</title>
+  </head>
+  <body>
+    <!-- Skip link (WCAG 2.2 — keyboard/screen reader) -->
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-  <!-- Skip link (WCAG 2.2 — keyboard/screen reader) -->
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+    <!-- App header -->
+    <header class="app-header" role="banner">
+      <h1 class="app-title">KHub App</h1>
+      <div class="header-controls">
+        <!-- Language toggle -->
+        <button
+          id="lang-toggle"
+          class="btn btn-icon"
+          aria-label="Switch to Spanish"
+          aria-live="polite"
+        >
+          EN
+        </button>
+        <!-- Dark mode toggle -->
+        <button id="theme-toggle" class="btn btn-icon" aria-label="Switch to dark mode">🌙</button>
+      </div>
+    </header>
 
-  <!-- App header -->
-  <header class="app-header" role="banner">
-    <h1 class="app-title">KHub App</h1>
-    <div class="header-controls">
-      <!-- Language toggle -->
-      <button id="lang-toggle"
-              class="btn btn-icon"
-              aria-label="Switch to Spanish"
-              aria-live="polite">EN</button>
-      <!-- Dark mode toggle -->
-      <button id="theme-toggle"
-              class="btn btn-icon"
-              aria-label="Switch to dark mode">🌙</button>
+    <!-- Update notice (shown by SW when new version is waiting) -->
+    <div
+      id="update-notice"
+      class="update-notice"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      hidden
+    >
+      <span data-i18n="updateAvailable">Update available —</span>
+      <button id="update-apply" class="btn btn-sm btn-secondary" data-i18n="refresh">
+        Refresh
+      </button>
     </div>
-  </header>
 
-  <!-- Update notice (shown by SW when new version is waiting) -->
-  <div id="update-notice"
-       class="update-notice"
-       role="status"
-       aria-live="polite"
-       aria-atomic="true"
-       hidden>
-    <span data-i18n="updateAvailable">Update available —</span>
-    <button class="btn btn-sm btn-secondary"
-            onclick="KHub.SW.applyUpdate()"
-            data-i18n="refresh">Refresh</button>
-  </div>
+    <!-- Error boundary (shown on uncaught errors) -->
+    <div
+      id="error-boundary"
+      class="error-boundary"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      tabindex="-1"
+      hidden
+    >
+      <strong data-i18n="errorTitle">Something went wrong</strong>
+      <p id="error-message"></p>
+      <button id="error-dismiss" class="btn btn-sm btn-danger" data-i18n="dismiss">Dismiss</button>
+    </div>
 
-  <!-- Error boundary (shown on uncaught errors) -->
-  <div id="error-boundary"
-       class="error-boundary"
-       role="alert"
-       aria-live="assertive"
-       aria-atomic="true"
-       tabindex="-1"
-       hidden>
-    <strong data-i18n="errorTitle">Something went wrong</strong>
-    <p id="error-message"></p>
-    <button class="btn btn-sm btn-danger"
-            onclick="KHub.ErrorBoundary.dismiss()"
-            data-i18n="dismiss">Dismiss</button>
-  </div>
+    <!-- Main content -->
+    <main id="main-content" class="app-main" role="main" aria-label="Main content">
+      <!-- ── Welcome / hero ── -->
+      <section class="welcome-screen" aria-labelledby="welcome-heading">
+        <h2 id="welcome-heading" data-i18n="welcome">Welcome to KHub</h2>
+        <p data-i18n="welcomeSub">Your app starts here.</p>
+        <button
+          class="btn btn-primary"
+          id="demo-modal-btn"
+          data-i18n="getStarted"
+          aria-haspopup="dialog"
+        >
+          Get Started
+        </button>
+      </section>
 
-  <!-- Main content -->
-  <main id="main-content" class="app-main" role="main" aria-label="Main content">
+      <!-- ── Component library demo ── -->
+      <section class="demo-section" aria-labelledby="demo-heading">
+        <h2 id="demo-heading" class="demo-heading">Component Library</h2>
 
-    <!-- ── Welcome / hero ── -->
-    <section class="welcome-screen" aria-labelledby="welcome-heading">
-      <h2 id="welcome-heading" data-i18n="welcome">Welcome to KHub</h2>
-      <p data-i18n="welcomeSub">Your app starts here.</p>
-      <button class="btn btn-primary"
-              id="demo-modal-btn"
-              data-i18n="getStarted"
-              aria-haspopup="dialog">Get Started</button>
-    </section>
-
-    <!-- ── Component library demo ── -->
-    <section class="demo-section" aria-labelledby="demo-heading">
-      <h2 id="demo-heading" class="demo-heading">Component Library</h2>
-
-      <!-- Buttons -->
-      <div class="demo-group" aria-labelledby="btn-demo-heading">
-        <h3 id="btn-demo-heading">Buttons</h3>
-        <div class="demo-row" role="list">
-          <button class="btn btn-primary"  role="listitem">Primary</button>
-          <button class="btn btn-secondary" role="listitem">Secondary</button>
-          <button class="btn btn-danger"   role="listitem">Danger</button>
-          <button class="btn btn-primary"  disabled role="listitem" aria-disabled="true">Disabled</button>
-          <button class="btn btn-sm btn-secondary" role="listitem">Small</button>
+        <!-- Buttons -->
+        <div class="demo-group" aria-labelledby="btn-demo-heading">
+          <h3 id="btn-demo-heading">Buttons</h3>
+          <div class="demo-row" role="list">
+            <button class="btn btn-primary" role="listitem">Primary</button>
+            <button class="btn btn-secondary" role="listitem">Secondary</button>
+            <button class="btn btn-danger" role="listitem">Danger</button>
+            <button class="btn btn-primary" disabled role="listitem" aria-disabled="true">
+              Disabled
+            </button>
+            <button class="btn btn-sm btn-secondary" role="listitem">Small</button>
+          </div>
         </div>
-      </div>
 
-      <!-- Cards (injected by app.js on DOMContentLoaded) -->
-      <div class="demo-group" aria-labelledby="card-demo-heading">
-        <h3 id="card-demo-heading">Cards</h3>
-        <div id="card-demo" class="demo-row card-row" aria-label="Card examples"></div>
-      </div>
+        <!-- Cards (injected by app.js on DOMContentLoaded) -->
+        <div class="demo-group" aria-labelledby="card-demo-heading">
+          <h3 id="card-demo-heading">Cards</h3>
+          <div id="card-demo" class="demo-row card-row" aria-label="Card examples"></div>
+        </div>
 
-      <!-- Inputs (injected by app.js on DOMContentLoaded) -->
-      <div class="demo-group" aria-labelledby="input-demo-heading">
-        <h3 id="input-demo-heading">Inputs</h3>
-        <div id="input-demo" class="demo-column" aria-label="Input examples"></div>
-      </div>
+        <!-- Inputs (injected by app.js on DOMContentLoaded) -->
+        <div class="demo-group" aria-labelledby="input-demo-heading">
+          <h3 id="input-demo-heading">Inputs</h3>
+          <div id="input-demo" class="demo-column" aria-label="Input examples"></div>
+        </div>
 
-      <!-- Modal trigger -->
-      <div class="demo-group" aria-labelledby="modal-demo-heading">
-        <h3 id="modal-demo-heading">Modal</h3>
-        <button class="btn btn-secondary"
-                id="open-modal-btn"
-                aria-haspopup="dialog">Open demo modal</button>
-      </div>
+        <!-- Modal trigger -->
+        <div class="demo-group" aria-labelledby="modal-demo-heading">
+          <h3 id="modal-demo-heading">Modal</h3>
+          <button class="btn btn-secondary" id="open-modal-btn" aria-haspopup="dialog">
+            Open demo modal
+          </button>
+        </div>
 
-      <!-- Error boundary trigger (dev only) -->
-      <div class="demo-group" id="error-demo-group" aria-labelledby="error-demo-heading" hidden>
-        <h3 id="error-demo-heading">Error Boundary (dev only)</h3>
-        <button class="btn btn-danger" id="trigger-error-btn">Trigger test error</button>
-      </div>
-    </section>
+        <!-- Error boundary trigger (dev only) -->
+        <div class="demo-group" id="error-demo-group" aria-labelledby="error-demo-heading" hidden>
+          <h3 id="error-demo-heading">Error Boundary (dev only)</h3>
+          <button class="btn btn-danger" id="trigger-error-btn">Trigger test error</button>
+        </div>
+      </section>
+    </main>
 
-  </main>
+    <!-- Bottom nav (hidden by default — show and populate when your app needs tabs) -->
+    <nav class="bottom-nav" role="navigation" aria-label="Main navigation" hidden>
+      <!-- Tabs injected by app.js -->
+    </nav>
 
-  <!-- Bottom nav (hidden by default — show and populate when your app needs tabs) -->
-  <nav class="bottom-nav"
-       role="navigation"
-       aria-label="Main navigation"
-       hidden>
-    <!-- Tabs injected by app.js -->
-  </nav>
-
-  <!-- JS — strict load order: config → i18n → theme → error → auth → components → app -->
-  <script src="js/config.js"></script>
-  <script src="js/i18n.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/error-boundary.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/a11y.js"></script>
-  <script src="js/components/button.js"></script>
-  <script src="js/components/modal.js"></script>
-  <script src="js/components/card.js"></script>
-  <script src="js/components/input.js"></script>
-  <script src="js/perf.js"></script>
-  <script src="js/app.js"></script>
-
-</body>
+    <!-- JS — strict load order: config → i18n → theme → error → auth → components → app -->
+    <script src="js/config.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/error-boundary.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/a11y.js"></script>
+    <script src="js/components/button.js"></script>
+    <script src="js/components/modal.js"></script>
+    <script src="js/components/card.js"></script>
+    <script src="js/components/input.js"></script>
+    <script src="js/perf.js"></script>
+    <script src="js/sw-manager.js"></script>
+    <script src="js/app.js"></script>
+  </body>
 </html>

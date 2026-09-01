@@ -6,7 +6,15 @@
 (function () {
   'use strict';
 
-  function create({ id, label = '', type = 'text', placeholder = '', required = false, hint = '', validate = null } = {}) {
+  function create({
+    id,
+    label = '',
+    type = 'text',
+    placeholder = '',
+    required = false,
+    hint = '',
+    validate = null,
+  } = {}) {
     const group = document.createElement('div');
     group.className = 'input-group';
 
@@ -14,7 +22,14 @@
     const labelEl = document.createElement('label');
     labelEl.className = 'input-label';
     labelEl.htmlFor = id;
-    labelEl.innerHTML = label + (required ? '<span class="required" aria-hidden="true">*</span>' : '');
+    labelEl.textContent = label;
+    if (required) {
+      const marker = document.createElement('span');
+      marker.className = 'required';
+      marker.setAttribute('aria-hidden', 'true');
+      marker.textContent = '*';
+      labelEl.appendChild(marker);
+    }
     group.appendChild(labelEl);
 
     // Input
@@ -24,7 +39,10 @@
     input.placeholder = placeholder;
     input.required = required;
     input.className = 'input-field';
-    input.setAttribute('autocomplete', type === 'email' ? 'email' : type === 'password' ? 'current-password' : 'off');
+    input.setAttribute(
+      'autocomplete',
+      type === 'email' ? 'email' : type === 'password' ? 'current-password' : 'off'
+    );
     group.appendChild(input);
 
     // Hint
@@ -33,7 +51,6 @@
       hintEl.className = 'input-hint';
       hintEl.id = `${id}-hint`;
       hintEl.textContent = hint;
-      input.setAttribute('aria-describedby', `${id}-hint ${id}-error`);
       group.appendChild(hintEl);
     }
 
@@ -43,6 +60,10 @@
     errorEl.id = `${id}-error`;
     errorEl.setAttribute('role', 'alert');
     group.appendChild(errorEl);
+    input.setAttribute(
+      'aria-describedby',
+      [hint ? `${id}-hint` : '', `${id}-error`].filter(Boolean).join(' ')
+    );
 
     // Validation
     if (typeof validate === 'function') {

@@ -10,12 +10,18 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] `sw.js` loads with no console errors on first visit
 - [ ] App shell is cached after first load (DevTools → Application → Cache Storage)
 - [ ] App loads offline after first visit (DevTools → Network → Offline)
+- [ ] An uncached same-origin navigation receives the cached offline document
+- [ ] Failed JS/CSS/font/image requests never receive the offline HTML document
+- [ ] Required shell installation is atomic; one missing required asset leaves the prior worker active
+- [ ] Activation preserves caches whose names do not belong to this app
 - [ ] Bumped `CACHE_VERSION` in `sw.js` triggers a new SW install
 - [ ] Update notice appears when new SW is waiting and page is "not safe"
 - [ ] Clicking **Refresh** on update banner reloads to new version
 - [ ] "Safe" state (no modal/focused input/dirty form) triggers quiet auto-reload
-- [ ] `localStorage.khub_last_update_check` timestamp is set after update check
-- [ ] Clearing `khub_last_update_check` and reloading triggers a fresh update check
+- [ ] The app-namespaced SW update-check timestamp is set after update check
+- [ ] Clearing that app-specific timestamp and reloading triggers a fresh update check
+- [ ] Broken-shell watchdog displays an accessible repair action
+- [ ] Repair requires explicit confirmation and deletes only this app's caches/SW registration
 - [ ] `manifest.json` has no errors (DevTools → Application → Manifest)
 - [ ] All 8 icon sizes load without 404 (DevTools → Network filter: icon)
 
@@ -89,12 +95,14 @@ Check every item in every section. If anything fails, fix before shipping.
 ## 6. Component Library
 
 **Buttons**
+
 - [ ] Primary, secondary, danger variants render correctly in light + dark
 - [ ] Disabled button shows 50% opacity and `cursor: not-allowed`
 - [ ] All buttons meet 44px minimum height
 - [ ] `KHub.Components.Button.create()` returns a working `<button>` element
 
 **Modal**
+
 - [ ] `KHub.Components.Modal.open()` renders modal with correct title + body
 - [ ] Confirm and Cancel callbacks fire correctly
 - [ ] `✕` close button dismisses modal
@@ -105,11 +113,13 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] `aria-modal="true"` and `aria-labelledby` are set on backdrop
 
 **Card**
+
 - [ ] `KHub.Components.Card.create({title, body})` renders correctly
 - [ ] Optional footer renders only when provided
 - [ ] Card looks correct in both light and dark mode
 
 **Input**
+
 - [ ] `KHub.Components.Input.create({...})` renders label + input + hint + error
 - [ ] `required: true` adds asterisk and `required` attribute
 - [ ] `validate` function runs on blur
@@ -131,6 +141,8 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] Prod mode: shows generic "Something went wrong" message
 - [ ] `show(msg, retryFn)` adds a "Try again" button that calls retryFn
 - [ ] Error boundary text is translated on language toggle
+- [ ] Exact known transient IndexedDB transaction reset is logged and remains nonfatal
+- [ ] Unrelated IndexedDB/storage errors remain visible and fatal to the boundary
 
 ---
 
@@ -197,6 +209,8 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] No hardcoded user data or secrets in any file
 - [ ] `.env.local` not committed (confirm with `git status`)
 - [ ] README is current and reflects all active features
+- [ ] `docs/DEPENDENCY-INVENTORY.md`, HTML imports, font sources, manifest icons, and `PRECACHE_URLS` agree
+- [ ] Vendored dependencies record exact version, source, license, update procedure, and reproducible build inputs
 
 ---
 
@@ -210,3 +224,4 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] PWA install prompt appears on Chrome/Edge
 - [ ] All icons load (check Network tab on first visit)
 - [ ] Update flow works end-to-end on Pages (deploy a change, wait 5 min, reload)
+- [ ] After deploy, verify SW URL/version, controlled page, cache namespace, cold-offline main task, document fallback, and asset failure behavior

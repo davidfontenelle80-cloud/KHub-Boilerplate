@@ -3,15 +3,18 @@
   "version": "1.0.0",
   "description": "Reusable vanilla PWA starter — multi-file, no build step, installable via GitHub Pages",
   "private": true,
+  "type": "module",
   "scripts": {
-    "lint":        "eslint js/**/*.js sw.js",
-    "lint:fix":    "eslint js/**/*.js sw.js --fix",
-    "format":      "prettier --write \"**/*.{html,css,js,json,md}\" --ignore-path .prettierignore",
-    "format:check":"prettier --check \"**/*.{html,css,js,json,md}\" --ignore-path .prettierignore",
-    "check":       "npm run lint && npm run format:check"
+    "lint": "eslint js/**/*.js sw.js",
+    "lint:fix": "eslint js/**/*.js sw.js --fix",
+    "format": "prettier --write \"**/*.{html,css,js,mjs,json,md}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{html,css,js,mjs,json,md}\" --ignore-path .prettierignore",
+    "test": "node --test tests/*.test.mjs",
+    "ship-check": "node scripts/khub-check.mjs .",
+    "check": "npm run lint && npm run format:check && npm test && npm run ship-check"
   },
   "devDependencies": {
-    "eslint":   "^8.57.0",
+    "eslint": "^8.57.0",
     "prettier": "^3.2.5"
   },
   "engines": {

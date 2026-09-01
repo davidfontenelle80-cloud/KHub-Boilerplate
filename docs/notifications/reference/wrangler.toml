@@ -1,7 +1,6 @@
-name = "ministry-tracker-push"
+name = "replace-with-app-push-worker"
 main = "worker.js"
 compatibility_date = "2026-06-29"
-account_id = "3df617adc3ddf2b3ed89cedbbb917fab"
 preview_urls = false
 
 [observability]
@@ -11,13 +10,15 @@ enabled = true
 enabled = true
 
 [vars]
-ALLOWED_ORIGIN = "https://davidfontenelle80-cloud.github.io"
-VAPID_PUBLIC_KEY = "BK8suBo_HzxgEM7XP_A-CQF9R4bbspmdFZ54lhWxME0_tBVDcaJA_H9MdpicZSPV_dz_hCq9r4LcGOUq9SAJSJY"
-VAPID_SUBJECT = "mailto:davidfontenelle80@gmail.com"
+APP_ID = "replace-with-app-id"
+APP_PATH = "/replace-with-app-path/"
+ALLOWED_ORIGIN = "https://replace-with-your-origin.example"
+VAPID_PUBLIC_KEY = "replace-with-public-key"
+VAPID_SUBJECT = "mailto:replace-with-contact@example.com"
 
 [[kv_namespaces]]
 binding = "PUSH_STORE"
-id = "559729167b3140e0add1c89ea1a1d477"
+id = "replace-with-kv-namespace-id"
 
 [triggers]
 crons = ["* * * * *"]

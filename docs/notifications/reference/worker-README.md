@@ -1,60 +1,26 @@
-# Ministry Tracker Push Worker
+# KHub Push/Reminder Worker Reference
 
-Stage: **I implementation in progress**
+This optional notification-archetype reference is not loaded by ordinary KHub apps.
+Copy and parameterize it only for an app that needs closed-app reminders.
 
-This folder contains the Cloudflare Worker for Ministry Tracker closed-app reminders.
+## Required configuration
 
-No private secrets are committed.
+- Set `APP_ID`, `APP_PATH`, `ALLOWED_ORIGIN`, the public VAPID values, and a dedicated
+  `PUSH_STORE` binding in `wrangler.toml`.
+- Store `VAPID_PRIVATE_KEY` only as a Worker secret. Never commit it.
+- Give each app its own worker identity and storage namespace.
 
-## Current status
+## Cleanup and run evidence
 
-Implemented in source:
+- A push-service `404` or `410` deletes the dead subscription and reminders owned by it.
+- A due reminder without a subscription is deleted as an orphan.
+- Every scheduled run logs one secret-free JSON counter record containing only the app id
+  and counts for due, sent, failed, dead subscriptions deleted, and orphan reminders deleted.
+- Logs must never include endpoints, subscription keys, VAPID secrets, authorization
+  headers, payload bodies, or user content.
 
-- `GET /api/health`
-- `OPTIONS *` CORS preflight
-- `POST /api/subscribe`
-- `POST /api/reminders`
-- `DELETE /api/reminders/:sourceType/:sourceId`
-- `POST /api/test-push` sends VAPID Web Push
-- scheduled cron handler sends due reminders
-- KV-based subscription/reminder storage
-- expired push subscription cleanup on 404/410
-- Worker-side VAPID JWT signing and `aes128gcm` payload encryption
+## Verification before deployment
 
-Not approved until verified:
-
-- Worker deployment.
-- Real browser `PushSubscription` test.
-- `POST /api/test-push` with a real subscription.
-- Scheduled reminder delivery test.
-- Installed-PWA closed-app notification test where the platform supports it.
-
-## Required Cloudflare setup
-
-1. Keep Worker name `ministry-tracker-push`.
-2. Create or keep KV namespace `ministry-tracker-push-store`.
-3. Bind the namespace as `PUSH_STORE`.
-4. Configure `ALLOWED_ORIGIN=https://davidfontenelle80-cloud.github.io`.
-5. Configure `VAPID_PUBLIC_KEY` from `js/push-config.js`.
-6. Configure `VAPID_SUBJECT=mailto:davidfontenelle80@gmail.com`.
-7. Store the private VAPID key only with `wrangler secret put VAPID_PRIVATE_KEY` or the Cloudflare dashboard secret UI.
-8. Configure cron trigger `* * * * *`.
-9. Deploy with `wrangler deploy` from this folder when Worker code/config changes.
-
-## Security rules
-
-Allowed in repo/frontend:
-
-- Worker public URL
-- VAPID public key
-- non-secret app identifiers
-
-Never commit:
-
-- VAPID private key
-- Cloudflare API token
-- GitHub token
-- shared secret
-- production credential dumps
-
-Do not mark Stage I approved until endpoint checks pass and a real closed-app notification fires on a supported device/PWA path at the selected reminder time.
+Test subscription creation, a successful push, 404 cleanup, 410 cleanup, orphan cleanup,
+counter output, scheduled delivery, CORS, and a real closed-app notification on each
+supported platform. Deployment is a separate authorized action.

@@ -9,15 +9,15 @@
   --khub-bg: var(--bg, #050607);
   --khub-surface: var(--surface, var(--card, #111318));
   --khub-surface-sub: var(--surface-sub, var(--input-bg, #29283d));
-  --khub-border: var(--border, rgba(255,255,255,0.07));
+  --khub-border: var(--border, rgba(255, 255, 255, 0.07));
   --khub-text: var(--text, #f7f8fb);
   --khub-muted: var(--text-dim, var(--muted, #a0aab8));
   --khub-accent: var(--accent, var(--ot, #58c18f));
   --khub-danger: var(--danger, var(--coral, #ff5d5d));
   --khub-on-accent: var(--color-on-primary, #06120e);
-  --khub-code-bg: rgba(0,0,0,.18);
+  --khub-code-bg: rgba(0, 0, 0, 0.18);
   --khub-radius: var(--radius-lg, 18px);
-  --khub-shadow: 0 16px 40px rgba(0,0,0,.45);
+  --khub-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
 .skip-link {
@@ -35,7 +35,9 @@
   font-weight: 800;
   text-decoration: none;
   box-shadow: var(--khub-shadow);
-  transition: transform .18s ease, opacity .18s ease;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
 }
 .skip-link:focus,
 .skip-link:focus-visible {
@@ -66,7 +68,9 @@
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
 }
-.update-notice[hidden] { display: none !important; }
+.update-notice[hidden] {
+  display: none !important;
+}
 .update-notice button {
   border: 0;
   border-radius: var(--radius-md);
@@ -92,9 +96,19 @@
   color: var(--khub-text);
   box-shadow: var(--khub-shadow);
 }
-.error-boundary[hidden] { display: none !important; }
-.error-boundary strong { display: block; margin-bottom: 4px; font-size: 15px; }
-.error-boundary p { margin: 0 0 12px; color: var(--khub-muted); line-height: 1.45; }
+.error-boundary[hidden] {
+  display: none !important;
+}
+.error-boundary strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+.error-boundary p {
+  margin: 0 0 12px;
+  color: var(--khub-muted);
+  line-height: 1.45;
+}
 .error-boundary button {
   border: 0;
   border-radius: var(--radius-md);
@@ -163,4 +177,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.sw-recovery {
+  margin: var(--space-4, 16px);
+  padding: var(--space-4, 16px);
+  border: 2px solid var(--color-danger, var(--khub-danger));
+  border-radius: var(--radius-lg);
+  background: var(--color-surface, var(--khub-surface));
+  color: var(--color-text, var(--khub-text));
+}
+
+.sw-recovery h2 {
+  margin-top: 0;
+}
+.sw-recovery-detail {
+  color: var(--color-text-muted, var(--khub-muted));
 }

@@ -21,9 +21,8 @@
   'use strict';
 
   const hostname = location.hostname;
-  const isDev    = hostname === 'localhost'
-                || hostname === '127.0.0.1'
-                || location.protocol === 'file:';
+  const isDev =
+    hostname === 'localhost' || hostname === '127.0.0.1' || location.protocol === 'file:';
   const pinchZoomStorageKey = 'khub-allow-pinch-zoom';
 
   function readPinchZoomPreference() {
@@ -35,8 +34,8 @@
   }
 
   function applyViewport(allowPinchZoom) {
-    const viewport = document.getElementById('khub-viewport')
-      || document.querySelector('meta[name="viewport"]');
+    const viewport =
+      document.getElementById('khub-viewport') || document.querySelector('meta[name="viewport"]');
 
     if (!viewport) return;
 
@@ -51,13 +50,22 @@
   window.KHub = window.KHub || {};
   window.KHub.Config = {
     // ── Identity ──────────────────────────────────────────
-    appName:   'KHub App',
-    version:   '1.0.0',
+    appName: 'KHub App',
+    version: '1.0.0',
     repoOwner: 'davidfontenelle80-cloud',
-    repoName:  'KHub-Boilerplate',
+    repoName: 'KHub-Boilerplate',
+
+    // ── PWA identity (must be unique per generated app) ───
+    pwa: {
+      cachePrefix: 'khub-boilerplate-',
+      obsoleteCachePrefixes: [],
+      updateCheckKey: 'khub-boilerplate:last-sw-update-check',
+      swUrl: './sw.js',
+      scope: './',
+    },
 
     // ── Environment ───────────────────────────────────────
-    env:    isDev ? 'development' : 'production',
+    env: isDev ? 'development' : 'production',
     isDev,
     isProd: !isDev,
 
@@ -80,8 +88,8 @@
     // ── Feature flags ─────────────────────────────────────
     // Set to true to activate. See individual module files for setup steps.
     features: {
-      auth:     false,   // -> js/auth.js
-      firebase: false,   // -> firebase/firebase-config.js
+      auth: false, // -> js/auth.js
+      firebase: false, // -> firebase/firebase-config.js
     },
 
     // ── Logging ───────────────────────────────────────────

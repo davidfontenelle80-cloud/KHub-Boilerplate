@@ -9,25 +9,40 @@
   let _lastErrorReport = '';
 
   function asText(value) {
-    if (value == null) return '';
+    if (value === null || value === undefined) return '';
     if (value instanceof Error) return value.message || value.name || 'Unknown error';
     if (typeof value === 'string') return value;
-    try { return JSON.stringify(value); } catch (e) { return String(value); }
+    try {
+      return JSON.stringify(value);
+    } catch (e) {
+      return String(value);
+    }
   }
 
   function fileName(src) {
     if (!src) return 'unknown';
-    try { return String(src).split('/').pop().split('?')[0] || 'unknown'; }
-    catch (e) { return 'unknown'; }
+    try {
+      return String(src).split('/').pop().split('?')[0] || 'unknown';
+    } catch (e) {
+      return 'unknown';
+    }
   }
 
   function clean(value) {
-    return String(value || '')
-      .replace(/\s+/g, ' ')
-      .replace(/[^a-zA-Z0-9_.:-]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .slice(0, 80) || 'unknown';
+    return (
+      String(value || '')
+        .replace(/\s+/g, ' ')
+        .replace(/[^a-zA-Z0-9_.:-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 80) || 'unknown'
+    );
+  }
+
+  function isRecoverableIndexedDbTransactionError(value) {
+    return asText(value)
+      .toLowerCase()
+      .includes('attempt to get records from database without an in-progress transaction');
   }
 
   function classify(message) {
@@ -53,12 +68,15 @@
       label,
       message: rawMessage || 'No error message was provided.',
       where,
-      stack: asText(meta.stack || (meta.error && meta.error.stack) || (meta.reason && meta.reason.stack))
+      stack: asText(
+        meta.stack || (meta.error && meta.error.stack) || (meta.reason && meta.reason.stack)
+      ),
     };
   }
 
   function copyText(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      return navigator.clipboard.writeText(text);
     const ta = document.createElement('textarea');
     ta.value = text;
     ta.setAttribute('readonly', '');
@@ -78,10 +96,17 @@
     }
     _retryFn = typeof retryFn === 'function' ? retryFn : null;
 
-    const el  = document.getElementById('error-boundary');
+    const el = document.getElementById('error-boundary');
     const msg = document.getElementById('error-message');
     const ctx = buildContext(message, meta);
-    _lastErrorReport = 'Error label: ' + ctx.label + '\nMessage: ' + ctx.message + '\nWhere: ' + ctx.where + (ctx.stack ? '\nStack: ' + ctx.stack : '');
+    _lastErrorReport =
+      'Error label: ' +
+      ctx.label +
+      '\nMessage: ' +
+      ctx.message +
+      '\nWhere: ' +
+      ctx.where +
+      (ctx.stack ? '\nStack: ' + ctx.stack : '');
 
     if (!el || !msg) {
       console.error('[KHub.ErrorBoundary]', _lastErrorReport);
@@ -89,11 +114,17 @@
     }
 
     const heading = el.querySelector('strong');
-    if (heading) heading.textContent = ctx.kind === 'JS-ERROR' ? 'App error caught' : ctx.kind.replace(/-/g, ' ');
+    if (heading)
+      heading.textContent =
+        ctx.kind === 'JS-ERROR'
+          ? window.KHub?.I18n?.t('errorCaught') || 'App error caught'
+          : ctx.kind.replace(/-/g, ' ');
     msg.textContent = ctx.message;
 
-    el.querySelectorAll('.error-boundary-footer, .error-boundary-details').forEach(node => node.remove());
-    Array.from(el.children).forEach(child => {
+    el.querySelectorAll('.error-boundary-footer, .error-boundary-details').forEach((node) =>
+      node.remove()
+    );
+    Array.from(el.children).forEach((child) => {
       if (child.tagName === 'BUTTON') child.remove();
     });
 
@@ -102,7 +133,7 @@
 
     const labelRow = document.createElement('div');
     const labelStrong = document.createElement('strong');
-    labelStrong.textContent = 'Error label: ';
+    labelStrong.textContent = window.KHub?.I18n?.t('errorLabel') || 'Error label: ';
     const labelCode = document.createElement('code');
     labelCode.textContent = ctx.label;
     labelRow.appendChild(labelStrong);
@@ -110,7 +141,7 @@
 
     const whereRow = document.createElement('div');
     const whereStrong = document.createElement('strong');
-    whereStrong.textContent = 'Where: ';
+    whereStrong.textContent = window.KHub?.I18n?.t('errorWhere') || 'Where: ';
     const whereText = document.createElement('span');
     whereText.textContent = ctx.where;
     whereRow.appendChild(whereStrong);
@@ -118,7 +149,8 @@
 
     const help = document.createElement('div');
     help.className = 'error-boundary-help';
-    help.textContent = 'Send this label and what you tapped before the error.';
+    help.textContent =
+      window.KHub?.I18n?.t('errorHelp') || 'Send this label and what you tapped before the error.';
 
     details.appendChild(labelRow);
     details.appendChild(whereRow);
@@ -134,12 +166,16 @@
     const copyBtn = document.createElement('button');
     copyBtn.className = 'btn btn-sm btn-secondary';
     copyBtn.type = 'button';
-    copyBtn.textContent = 'Copy error';
+    copyBtn.textContent = window.KHub?.I18n?.t('copyError') || 'Copy error';
     copyBtn.addEventListener('click', () => {
-      copyText(_lastErrorReport).then(() => {
-        copyBtn.textContent = 'Copied';
-        setTimeout(() => { copyBtn.textContent = 'Copy error'; }, 1200);
-      }).catch(() => console.warn('[KHub.ErrorBoundary] Copy failed'));
+      copyText(_lastErrorReport)
+        .then(() => {
+          copyBtn.textContent = window.KHub?.I18n?.t('copiedShort') || 'Copied';
+          setTimeout(() => {
+            copyBtn.textContent = window.KHub?.I18n?.t('copyError') || 'Copy error';
+          }, 1200);
+        })
+        .catch(() => console.warn('[KHub.ErrorBoundary] Copy failed'));
     });
     actions.appendChild(copyBtn);
 
@@ -148,7 +184,11 @@
       retryBtn.className = 'btn btn-sm btn-secondary';
       retryBtn.type = 'button';
       retryBtn.textContent = retry;
-      retryBtn.addEventListener('click', () => { const fn = _retryFn; dismissError(); if (fn) fn(); });
+      retryBtn.addEventListener('click', () => {
+        const fn = _retryFn;
+        dismissError();
+        if (fn) fn();
+      });
       actions.appendChild(retryBtn);
     }
 
@@ -163,7 +203,10 @@
     el.hidden = false;
     el.focus();
 
-    window.KHub?.A11y?.announce(ctx.kind + ': ' + ctx.message + '. Error label ' + ctx.label, 'assertive');
+    window.KHub?.A11y?.announce(
+      ctx.kind + ': ' + ctx.message + '. Error label ' + ctx.label,
+      'assertive'
+    );
   }
 
   function dismissError() {
@@ -172,7 +215,7 @@
     _retryFn = null;
   }
 
-  window.addEventListener('error', event => {
+  window.addEventListener('error', (event) => {
     const err = event.error;
     console.error('[KHub] Uncaught error:', err || event.message);
     show(event.message || err, null, {
@@ -181,21 +224,35 @@
       lineno: event.lineno,
       colno: event.colno,
       error: err,
-      stack: err && err.stack
+      stack: err && err.stack,
     });
   });
 
-  window.addEventListener('unhandledrejection', event => {
+  window.addEventListener('unhandledrejection', (event) => {
     const reason = event.reason;
+    if (isRecoverableIndexedDbTransactionError(reason)) {
+      event.preventDefault();
+      console.warn('[KHub] Non-fatal browser storage transaction reset:', reason);
+      return;
+    }
     console.error('[KHub] Unhandled rejection:', reason);
     show(asText(reason), null, {
       kind: classify(asText(reason)),
       source: 'promise',
       reason,
-      stack: reason && reason.stack
+      stack: reason && reason.stack,
     });
   });
 
   window.KHub = window.KHub || {};
-  window.KHub.ErrorBoundary = { show, dismiss: dismissError, lastReport: () => _lastErrorReport };
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('error-dismiss')?.addEventListener('click', dismissError);
+  });
+
+  window.KHub.ErrorBoundary = {
+    show,
+    dismiss: dismissError,
+    lastReport: () => _lastErrorReport,
+    isRecoverableIndexedDbTransactionError,
+  };
 })();

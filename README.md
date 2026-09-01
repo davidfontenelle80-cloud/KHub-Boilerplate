@@ -16,13 +16,13 @@ that work never gets lost when an AI session ends (context runs out, a usage lim
 run is interrupted). The standard is a small set of governance files, led by one live file
 that is the **first thing every worker reads and the last thing every worker updates**:
 
-| File                                            | Role                                                              |
-| ----------------------------------------------- | ----------------------------------------------------------------- |
-| [`.ai/ACTIVE_TASK.md`](.ai/ACTIVE_TASK.md)      | Live working memory — the single source of truth, right now.      |
-| [`.ai/SESSION_TEMPLATE.md`](.ai/SESSION_TEMPLATE.md) | Exactly how every worker must use `ACTIVE_TASK.md`.          |
-| [`CONTRIBUTING_AI.md`](CONTRIBUTING_AI.md)      | The five non-negotiables + Supervisor/Worker responsibility split.|
-| [`docs/AI-SESSION-CONTINUITY-STANDARD.md`](docs/AI-SESSION-CONTINUITY-STANDARD.md) | Why it exists, and how to adopt it. |
-| [`_ai-session-continuity-standard/`](_ai-session-continuity-standard/) | Portable starter kit — templates to install in any repo. |
+| File                                                                               | Role                                                               |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [`.ai/ACTIVE_TASK.md`](.ai/ACTIVE_TASK.md)                                         | Live working memory — the single source of truth, right now.       |
+| [`.ai/SESSION_TEMPLATE.md`](.ai/SESSION_TEMPLATE.md)                               | Exactly how every worker must use `ACTIVE_TASK.md`.                |
+| [`CONTRIBUTING_AI.md`](CONTRIBUTING_AI.md)                                         | The five non-negotiables + Supervisor/Worker responsibility split. |
+| [`docs/AI-SESSION-CONTINUITY-STANDARD.md`](docs/AI-SESSION-CONTINUITY-STANDARD.md) | Why it exists, and how to adopt it.                                |
+| [`_ai-session-continuity-standard/`](_ai-session-continuity-standard/)             | Portable starter kit — templates to install in any repo.           |
 
 **Workflow (no step optional):**
 
@@ -33,7 +33,7 @@ read ACTIVE_TASK.md → read PROJECT_STATUS.md → verify repo matches docs
 ```
 
 **Why it matters:** an AI worker has no memory between sessions. Because the state lives in
-`.ai/ACTIVE_TASK.md` in the repo, the *next* worker resumes exactly where the last one
+`.ai/ACTIVE_TASK.md` in the repo, the _next_ worker resumes exactly where the last one
 stopped — no re-derived context, no repeated work, no contradicted decisions.
 
 **Supervisor vs Worker:** **Workers** (AI sessions + humans implementing) own implementation,
@@ -49,7 +49,7 @@ section of `ACTIVE_TASK.md`. Full detail in [`CONTRIBUTING_AI.md`](CONTRIBUTING_
 | Feature                                                                       | File(s)                                                                 |
 | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | PWA shell + manifest                                                          | `index.html`, `manifest.json`                                           |
-| Service worker (12h update check)                                             | `sw.js`, `js/app.js`                                                    |
+| Service worker, safe updates, and scoped repair                               | `sw.js`, `js/sw-manager.js`                                             |
 | Responsive design (phone/tablet/desktop)                                      | `css/responsive.css`                                                    |
 | EN/ES language toggle                                                         | `js/i18n.js`                                                            |
 | Dark mode (system + manual)                                                   | `js/theme.js`, `css/dark-mode.css`                                      |
@@ -64,6 +64,8 @@ section of `ACTIVE_TASK.md`. Full detail in [`CONTRIBUTING_AI.md`](CONTRIBUTING_
 | Icon system (8 sizes + SVG favicon)                                           | `icons/`                                                                |
 | Performance check                                                             | `js/perf.js`                                                            |
 | Full test checklist                                                           | `TEST-CHECKLIST.md`                                                     |
+| SW safety and post-deploy verification                                        | `docs/SW-OPERATIONS.md`                                                 |
+| Runtime dependency/version/license inventory                                  | `docs/DEPENDENCY-INVENTORY.md`                                          |
 | Push notifications (closed-app reminders)                                     | `docs/notifications/NOTIFICATIONS.md` + `docs/notifications/reference/` |
 | UX standards (modes, viewport/zoom, navigation, layout, data safety, offline) | `docs/UX-STANDARDS.md`                                                  |
 | App archetypes (tracker, calculator, management, finance)                     | `docs/APP-ARCHETYPES.md`                                                |
@@ -76,7 +78,7 @@ section of `ACTIVE_TASK.md`. Full detail in [`CONTRIBUTING_AI.md`](CONTRIBUTING_
 KHub-Boilerplate/
 ├── index.html              # App shell — ARIA, skip link, load order
 ├── manifest.json           # PWA manifest — all 8 icon sizes
-├── sw.js                   # Service worker — cache + update logic
+├── sw.js                   # App-owned atomic cache + document-safe offline fallback
 ├── package.json            # Lint + format scripts (no build step)
 ├── .eslintrc.json          # ESLint rules
 ├── .prettierrc             # Prettier config
@@ -99,7 +101,8 @@ KHub-Boilerplate/
 │   ├── error-boundary.js   # Global error catch, retry UI, i18n messages
 │   ├── auth.js             # Auth stub: state, UI controls, modal sign-in
 │   ├── perf.js             # Navigation Timing, FCP, LCP, thresholds
-│   ├── app.js              # Bootstrap, event bus, SW registration, 12h update timer
+│   ├── sw-manager.js       # Sole SW registrar, safe updates, health, scoped repair
+│   ├── app.js              # App bootstrap and demo wiring
 │   └── components/
 │       ├── button.js       # Button factory
 │       ├── modal.js        # Accessible modal (focus trap, Escape, ARIA)

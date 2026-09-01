@@ -1,6 +1,12 @@
 # KHub Push Notification System
 
-**Reference implementation: Ministry Tracker v64** — the first KHub app with working closed-app reminders on installed PWAs. This doc explains how the whole system works and exactly how to clone it into a new KHub app. The proven source files are in `reference/` verbatim; do not edit them there — copy them into the new app and rename per the checklist below.
+The optional reference now removes dead subscriptions after push-service 404/410
+responses, deletes orphan reminders, and emits secret-free structured per-run counters.
+Keep this infrastructure inside apps that select the notification/reminder archetype.
+
+The reference began with a proven installed-PWA reminder implementation and is now
+parameterized for KHub apps. Copy only the optional notification modules an app needs,
+set its identity/path/storage bindings, and merge push handlers into the single app SW.
 
 Verified working end to end: real browser subscription, scheduled delivery via cron, closed-app notification on installed PWA, tap-to-open routing to the right screen.
 
@@ -49,39 +55,39 @@ There is no Firebase in the push path. The Worker signs its own VAPID JWTs and e
 
 ### Client
 
-| File | Responsibility |
-|---|---|
-| `js/push-config.js` | Public-only config object on `window`. Worker URL + VAPID **public** key + app name. Safe to commit. |
-| `js/push.js` | Self-contained IIFE, no dependencies. Exposes `window.MinistryPush` (rename per app). Handles permission prompt (with 45s timeout guard), browser subscription creation, stale-key detection and re-subscribe, POSTing subscription/reminders to the Worker, `keepalive` fetches, and a one-shot retry on network aborts. All failures resolve to `{ ok:false, handled:true, ... }` so callers never need try/catch. |
-| `sw.js` | Two listeners: `push` (parse payload, `showNotification` with icon/badge/tag/data) and `notificationclick` (focus an existing app window and postMessage a route, or open a new window with route params in the URL). |
-| `js/sw-register.js` | On load, reads a pending notification route from URL params (`?screen=...&sourceType=...&sourceId=...`) or sessionStorage, then retries `applyNotificationRoute()` up to 20x until the app's `switchScreen` exists. This is what makes cold-start tap-through land on the right screen. |
-| `js/app.js` glue | Before syncing a reminder, write a pending flag to localStorage (`mtPendingReminderSync`); clear it on success. `resumePendingReminderSync()` runs on load and re-syncs if a previous sync was interrupted by an SW-update reload. |
+| File                | Responsibility                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `js/push-config.js` | Public-only config object on `window`. Worker URL + VAPID **public** key + app name. Safe to commit.                                                                                                                                                                                                                                                                                                                 |
+| `js/push.js`        | Self-contained IIFE, no dependencies. Exposes `window.MinistryPush` (rename per app). Handles permission prompt (with 45s timeout guard), browser subscription creation, stale-key detection and re-subscribe, POSTing subscription/reminders to the Worker, `keepalive` fetches, and a one-shot retry on network aborts. All failures resolve to `{ ok:false, handled:true, ... }` so callers never need try/catch. |
+| `sw.js`             | Two listeners: `push` (parse payload, `showNotification` with icon/badge/tag/data) and `notificationclick` (focus an existing app window and postMessage a route, or open a new window with route params in the URL).                                                                                                                                                                                                |
+| `js/sw-register.js` | On load, reads a pending notification route from URL params (`?screen=...&sourceType=...&sourceId=...`) or sessionStorage, then retries `applyNotificationRoute()` up to 20x until the app's `switchScreen` exists. This is what makes cold-start tap-through land on the right screen.                                                                                                                              |
+| `js/app.js` glue    | Before syncing a reminder, write a pending flag to localStorage (`mtPendingReminderSync`); clear it on success. `resumePendingReminderSync()` runs on load and re-syncs if a previous sync was interrupted by an SW-update reload.                                                                                                                                                                                   |
 
 ### Worker (`cloudflare/<app>-push/`)
 
-| File | Responsibility |
-|---|---|
-| `worker.js` | Router + crypto + storage. Signs VAPID JWTs with WebCrypto (ES256, DER-to-raw signature normalization), encrypts payloads per RFC 8291 (`aes128gcm`), stores everything in KV, and processes due reminders each minute from the cron trigger. |
-| `wrangler.toml` | Worker name, KV binding `PUSH_STORE`, cron `* * * * *`, public vars (`ALLOWED_ORIGIN`, `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT`). |
+| File            | Responsibility                                                                                                                                                                                                                                |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `worker.js`     | Router + crypto + storage. Signs VAPID JWTs with WebCrypto (ES256, DER-to-raw signature normalization), encrypts payloads per RFC 8291 (`aes128gcm`), stores everything in KV, and processes due reminders each minute from the cron trigger. |
+| `wrangler.toml` | Worker name, KV binding `PUSH_STORE`, cron `* * * * *`, public vars (`ALLOWED_ORIGIN`, `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT`).                                                                                                                  |
 
 ### KV data model
 
-| Key | Value |
-|---|---|
-| `subscription:<id>` | `{ subscription, userAgent, ... }` — `<id>` derived from the endpoint hash |
-| `reminder:<subscriptionId>:<sourceType>:<sourceId>` | `{ title, body, fireAt, url, sentAt?, lastError? }` |
-| `due:<YYYY-MM-DDTHH:MM>` | list of reminder keys due that minute (bucket index so cron never scans all keys) |
+| Key                                                 | Value                                                                             |
+| --------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `subscription:<id>`                                 | `{ subscription, userAgent, ... }` — `<id>` derived from the endpoint hash        |
+| `reminder:<subscriptionId>:<sourceType>:<sourceId>` | `{ title, body, fireAt, url, sentAt?, lastError? }`                               |
+| `due:<YYYY-MM-DDTHH:MM>`                            | list of reminder keys due that minute (bucket index so cron never scans all keys) |
 
 ### Worker API
 
-| Endpoint | Purpose |
-|---|---|
-| `GET /api/health` | Config sanity check |
-| `POST /api/subscribe` | Store/refresh a browser PushSubscription, returns `subscriptionId` |
-| `POST /api/reminders` | Upsert a reminder (`sourceType` + `sourceId` = natural key, so editing a note just overwrites its reminder) |
-| `DELETE /api/reminders/:sourceType/:sourceId?subscriptionId=` | Clear a reminder |
-| `POST /api/test-push` | Immediate test notification |
-| cron (every minute) | `processDueReminders()` — send due pushes, mark `sentAt`, delete dead subscriptions on 404/410, record `lastError` for retries |
+| Endpoint                                                      | Purpose                                                                                                                        |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/health`                                             | Config sanity check                                                                                                            |
+| `POST /api/subscribe`                                         | Store/refresh a browser PushSubscription, returns `subscriptionId`                                                             |
+| `POST /api/reminders`                                         | Upsert a reminder (`sourceType` + `sourceId` = natural key, so editing a note just overwrites its reminder)                    |
+| `DELETE /api/reminders/:sourceType/:sourceId?subscriptionId=` | Clear a reminder                                                                                                               |
+| `POST /api/test-push`                                         | Immediate test notification                                                                                                    |
+| cron (every minute)                                           | `processDueReminders()` — send due pushes, mark `sentAt`, delete dead subscriptions on 404/410, record `lastError` for retries |
 
 ---
 
@@ -113,18 +119,18 @@ Public key goes in `push-config.js` and `wrangler.toml [vars]`. Private key goes
 
 **2. Rename in the client files** (find/replace, case-sensitive):
 
-| Ministry Tracker value | Replace with |
-|---|---|
-| `MINISTRY_TRACKER_PUSH_CONFIG` | `<APP>_PUSH_CONFIG` |
-| `MinistryPush` / `MinistryPushDebug` | `<App>Push` / `<App>PushDebug` |
-| `[MinistryPush]` log prefix | `[<App>Push]` |
-| `ministryPushSubscriptionId` (localStorage) | `<app>PushSubscriptionId` |
-| `mtPendingReminderSync` (localStorage) | `<app>PendingReminderSync` |
-| `app: 'ministry-tracker'` (API body) | `app: '<app-slug>'` |
-| `'ministry-note'` default sourceType | the app's own sourceType |
-| `'/ministry-tracker-/'` URL path (sw.js + worker.js payloads) | `'/<repo-name>/'` |
-| `screen: 'notes'` route target (sw.js + sw-register.js) | the app's target screen |
-| `'Ministry Tracker'` display strings | app display name |
+| Ministry Tracker value                                        | Replace with                   |
+| ------------------------------------------------------------- | ------------------------------ |
+| `MINISTRY_TRACKER_PUSH_CONFIG`                                | `<APP>_PUSH_CONFIG`            |
+| `MinistryPush` / `MinistryPushDebug`                          | `<App>Push` / `<App>PushDebug` |
+| `[MinistryPush]` log prefix                                   | `[<App>Push]`                  |
+| `ministryPushSubscriptionId` (localStorage)                   | `<app>PushSubscriptionId`      |
+| `mtPendingReminderSync` (localStorage)                        | `<app>PendingReminderSync`     |
+| `app: 'ministry-tracker'` (API body)                          | `app: '<app-slug>'`            |
+| `'ministry-note'` default sourceType                          | the app's own sourceType       |
+| `'/ministry-tracker-/'` URL path (sw.js + worker.js payloads) | `'/<repo-name>/'`              |
+| `screen: 'notes'` route target (sw.js + sw-register.js)       | the app's target screen        |
+| `'Ministry Tracker'` display strings                          | app display name               |
 
 **3. Cloudflare setup** (one time per app):
 
@@ -169,4 +175,5 @@ Commit-safe: Worker public URL, VAPID public key, app identifiers. Never commit:
 
 ---
 
-*Source of truth: `github.com/davidfontenelle80-cloud/ministry-tracker-` (js/push.js, js/push-config.js, sw.js, js/sw-register.js, cloudflare/ministry-tracker-push/). Files in `reference/` are verbatim copies from v64.*
+Historical implementation evidence came from Ministry Tracker. The files in `reference/`
+are generalized KHub examples and are not verbatim application copies.

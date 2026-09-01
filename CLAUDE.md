@@ -42,6 +42,9 @@ See `docs/AI-SESSION-CONTINUITY-STANDARD.md`.
 - Imports/restores follow the 9-step contract — never overwrite data right after file selection.
 - Offline: runtime dependencies are precached or self-hosted; cold offline launch must
   complete the app's main task; bump `CACHE_VERSION` when precache contents change.
+- SW: keep one `js/sw-manager.js`; use a unique app cache prefix, document-only offline
+  fallback, atomic required-shell install, and app-scoped explicit repair. Follow
+  `docs/SW-OPERATIONS.md` and keep `docs/DEPENDENCY-INVENTORY.md` current.
 - Every new app declares an archetype (docs/APP-ARCHETYPES.md: task tracker, calculator,
   management, financial dashboard) and a layout mode (compact 680 / standard 960 / wide 1360
   via the --max-width token). Follow the archetype's screen order and first-use state.
