@@ -19,7 +19,7 @@
 
 ## Status
 
-- **Status:** READY FOR REVIEW
+- **Status:** APPROVED
 - **% complete:** 100% of implementation; CI will exercise it on the next push/PR
 - **Confidence:** 95%
 
@@ -72,7 +72,7 @@ Stop once the guard script, its test, the CI workflow, and the npm wiring are co
 
 > **Only the Supervisor (David) edits this section. Workers never self-approve.**
 
-- **Review status:** NOT REVIEWED
-- **Reviewed by:**
-- **Reviewed at:**
-- **Observations / required changes:**
+- **Review status:** APPROVED
+- **Reviewed by:** David Fontenelle (Supervisor)
+- **Reviewed at:** 2026-09-01 EDT
+- **Observations / required changes:** Approved. Zero-dependency encoding guard, its test, the CI workflow, and npm wiring are in; encoding regressions now fail the build. Same guard rolled out to all four suite apps. No demo app source touched.
