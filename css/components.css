@@ -68,9 +68,6 @@
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
 }
-.update-notice[hidden] {
-  display: none !important;
-}
 .update-notice button {
   border: 0;
   border-radius: var(--radius-md);
@@ -95,9 +92,6 @@
   border: 1px solid color-mix(in srgb, var(--khub-danger) 45%, var(--khub-border));
   color: var(--khub-text);
   box-shadow: var(--khub-shadow);
-}
-.error-boundary[hidden] {
-  display: none !important;
 }
 .error-boundary strong {
   display: block;

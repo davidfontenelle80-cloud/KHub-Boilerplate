@@ -225,3 +225,18 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] All icons load (check Network tab on first visit)
 - [ ] Update flow works end-to-end on Pages (deploy a change, wait 5 min, reload)
 - [ ] After deploy, verify SW URL/version, controlled page, cache namespace, cold-offline main task, document fallback, and asset failure behavior
+
+---
+
+## Forms, sheets, and shared UI state (UX-STANDARDS §8)
+
+- [ ] `khub-check` reports no missing global `[hidden]` reset and no short dialog/sheet
+- [ ] Every element hidden by JS is actually invisible (no empty panels, blank bars, or dead buttons)
+- [ ] On a phone viewport every open sheet spans the full width (`right === innerWidth`)
+- [ ] "New …" forms open with the name field focused and show only entry fields: name → phone → address → schedule → optional details → Save
+- [ ] Saving a **new** record opens its card with the record actions; saving an **edit** closes the sheet
+- [ ] Buttons whose data is missing are hidden (no Email without an email; one "Add phone" prompt instead of Call/Text/WhatsApp)
+- [ ] Switch a shared tab bar from each module that controls it, leave the screen, return: the tab you left is the one shown
+- [ ] Sibling tabs use the same header and filter components
+- [ ] With the language toggled, no tab, filter, chip, or button label wraps at 390px width
+- [ ] One-time migrations tested with legacy data seeded **before** first load, and re-running them changes nothing

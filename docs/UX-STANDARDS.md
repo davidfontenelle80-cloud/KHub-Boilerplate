@@ -211,3 +211,97 @@ status, so the same words mean the same thing in every KHub app:
 Status is never communicated by color alone — pair text with the
 `.status-chip` component and the `-soft` tokens. Save/sync status updates
 announce through a targeted live region, not an `aria-live` on the app root.
+
+---
+
+## 8. Forms, sheets, and shared UI state
+
+Learned from the 2026-09-25 Ministry Tracker sweep. Each rule below is a bug
+that shipped once; the fix is now the standard.
+
+### 8.1 The `hidden` attribute always wins
+
+A component rule such as `.panel { display: flex }` overrides the browser's
+default `[hidden] { display: none }`. JS then sets `el.hidden = true` and the
+element stays on screen — in Ministry this showed an empty action panel above
+the New Return Visit form.
+
+- The global reset in `css/main.css` contains
+  `[hidden] { display: none !important; }`. Keep it in every app.
+- Hide and show with the `hidden` attribute, not ad-hoc classes, so this one
+  rule covers everything. No per-component `[hidden]` patches.
+- `khub-check` **fails** an app without the global rule (a scoped rule like
+  `.sheet [hidden]` does not count).
+
+### 8.2 Phone bottom sheets span the full width
+
+Browsers cap `<dialog>` at `max-width: calc(100% - 2em - 6px)`. A sheet set to
+`width: 100%` with a bottom-anchored margin therefore stops ~38px short of the
+right edge on phones.
+
+```css
+@media (max-width: 520px) {
+  .app-sheet {
+    width: 100%;
+    max-width: 100%;
+    margin: auto 0 0;
+  }
+}
+```
+
+`khub-check` **warns** on any `dialog`/`sheet` rule with `width: 100%` and no
+`max-width: 100%`. Verify at runtime by measuring the open sheet:
+`getBoundingClientRect().right === innerWidth`.
+
+### 8.3 Info-first "New" forms
+
+Creating a record is data entry, not action. A "New …" form shows only entry
+fields, in this order:
+
+1. Identity (name) — focused on open
+2. Contact (phone, then email) — phone marked "Recommended" with a hint that it
+   enables Call / Text / WhatsApp after saving
+3. Location (address)
+4. Schedule (date, time, reminder)
+5. Optional details, collapsed
+6. Cancel / Save
+
+Actions that need a saved record (Call, Text, Directions, Log, Calendar, Share,
+Edit, Delete) never appear in the create form.
+
+- **Save on a new record opens that record's card**, so the actions appear the
+  moment the information exists.
+- **Save on an edit closes the sheet** and returns to where the person was.
+- When one sheet serves new / view / edit modes, switch sections with the
+  `hidden` attribute (§8.1) and test all three modes.
+- Action buttons whose data is missing stay hidden (no Email button without an
+  email); show one "Add phone number to enable Call, Text and WhatsApp" prompt
+  instead of dead buttons.
+
+### 8.4 One owner per piece of UI state
+
+When two modules drive the same control (for example a tab bar), exactly one of
+them owns the state. Never keep a private "current tab" variable in one module
+while another module changes the tabs directly — the copies drift, and the
+next re-activation restores the stale value. In Ministry, returning to Notes
+jumped back to Return Visits after a notification tap for this reason.
+
+- Either route every change through the owner's `activate()` function, or
+- read the state from the DOM (the element with `.is-active` /
+  `aria-selected="true"`), which every writer already updates.
+
+### 8.5 Sibling tabs share components
+
+Tabs that sit side by side (Notes / Return Visits / Bible Studies) use the same
+header component and the same filter control: title, one-line description,
+primary action (below the title on phones), then one segmented filter bar.
+Build siblings from shared classes, not per-module look-alikes; a new sibling
+adds a variant (for example a 3-column bar) rather than a new style.
+
+### 8.6 Labels fit in every language
+
+Short labels (tabs, segmented filters, chips, buttons) must fit on one line in
+every shipped language at 390px width. Spanish runs ~30% longer than English.
+Prefer a shorter translation for the control ("Estudios") and keep the full
+term in the section heading ("Estudios bíblicos"). Check with the language
+toggle on a phone viewport as part of the ship check.

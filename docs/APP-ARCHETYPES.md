@@ -85,6 +85,11 @@ Reference: Talk Arrangements.
 **First-use state:** create or import the first container of work.
 Example: "Add a service year or import an existing schedule."
 
+**Create flow:** follows the info-first rule (UX-STANDARDS §8.3): the "New …" form
+asks name → phone → address → schedule → optional details; saving a new record opens
+its card with the record actions. Reference: Ministry Tracker Return Visits and
+Bible Studies.
+
 ---
 
 ## 4. Financial dashboard

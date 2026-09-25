@@ -12,59 +12,105 @@
 
 ## Session / worker identity
 
-- **Worker:** Claude (Cowork) acting for Supervisor **David Fontenelle**
-- **Model:** Claude Opus 4.8
-- **Session started:** 2026-09-01 EDT
+- **Worker:** Claude acting for Supervisor **David Fontenelle**
+- **Model:** Claude Opus 5.5
+- **Session started:** 2026-09-25 EDT
 - **Supervisor:** David Fontenelle
+- **Previous task:** Encoding guard — APPROVED 2026-09-01 (commits `de0e9b8`, `065c20d`).
+  Repo matched that record at session start.
 
 ## Status
 
-- **Status:** APPROVED
-- **% complete:** 100% of implementation; CI will exercise it on the next push/PR
+- **Status:** READY FOR REVIEW
+- **% complete:** 100% of implementation
 - **Confidence:** 95%
 
 ## Objective & task
 
-- **Current objective:** Prevent the double-encoded-UTF-8 (mojibake) class of bug from ever reaching a KHub app again, and give every app a build-time guard against it.
-- **Current task:** Add a zero-dependency encoding guard to the boilerplate, wire it into the npm `check` and test suite, and add a GitHub Actions workflow. This is infra/tooling only — no demo app code touched.
-- **Last completed step:** Added `scripts/check-encoding.mjs`, `tests/encoding.test.mjs`, `.github/workflows/encoding-check.yml`, and a `check:encoding` npm script folded into `check`. Verified clean on the whole repo (71 files) and all 17 tests pass.
+- **Current objective:** Turn the lessons from the 2026-09-25 Ministry Tracker post-change
+  sweep into KHub standards, so every app inherits them — including how the sweep itself
+  was done.
+- **Current task:** Standards docs, ship-check rules with tests, and the starter CSS reset.
+  Approved by David 2026-09-25 as proposed: boilerplate only (no roll-out to suite apps
+  yet); rule 6 (`[hidden]` reset) FAILS, rule 7 (short dialog sheet) WARNS.
+- **Last completed step:** All files written, formatted, and verified (below).
 
 ## Background (why)
 
-On 2026-09-01, `Talk-Arrangements-Public/js/app.js` was found to be double-encoded UTF-8: original UTF-8 bytes had been decoded as Latin-1 and re-saved, corrupting event-type emoji, box-drawing comment dividers, check/warning glyphs, and Spanish accents. It surfaced as garbled orange text in the running app. A sweep of the suite found the same corruption in `note-clip` (`js/notes.js`, `settings.js`, `theme.js`) and one `ministry-tracker-` docs file. All were fixed. This guard exists so the regression is caught mechanically, not by eye.
+A sweep of 11 same-day Ministry Tracker commits found, and David approved fixes for:
+
+1. Phone bottom sheets 38px short on the right — `<dialog>` UA `max-width` cap with
+   `width:100%` (Ministry v93).
+2. Notes tab jumping back to Return Visits — two modules each tracking the active tab (v93).
+3. Spanish tab label wrapping (v93).
+4. Return Visits header built differently from its sibling tabs (v93).
+5. New Return Visit showing the empty action panel (Directions/Call/Log/Share…) above the
+   Name/Phone/Address form — `.rv-visit-view{display:flex}` overriding `[hidden]`; plus
+   David's requested flow: info first, actions after save, new record opens its card (v94).
+
+Ministry commits: `b81eb72` (v93), `180aa7c` (v94).
 
 ## Files changed this session
 
-- `scripts/check-encoding.mjs` — reusable, dependency-free scanner that flags C1 control code points (U+0080–U+009F) and U+FFFD, the reliable signatures of double-encoded UTF-8. Runs as `node scripts/check-encoding.mjs .`
-- `tests/encoding.test.mjs` — asserts the repo is clean and that the scanner detects mojibake and the replacement character (samples built from escapes so this file stays clean).
-- `.github/workflows/encoding-check.yml` — CI that runs the scanner on push/PR/dispatch, on bare node (no install), so it drops into any app repo.
-- `package.json` — added `check:encoding` and folded it into `check`.
-- `.ai/ACTIVE_TASK.md` — this tracker update.
+- `css/main.css` — global `[hidden] { display: none !important; }` in the reset; removed the
+  now-redundant `.update-notice[hidden]` / `.error-boundary[hidden]` one-offs.
+- `css/components.css` — removed the same two redundant one-offs.
+- `scripts/khub-check.mjs` — rule 6: FAIL without a GLOBAL `[hidden]` reset (a scoped
+  `.x [hidden]` does not count); rule 7: WARN on a `dialog`/`sheet` rule with `width:100%`
+  and no `max-width:100%` (backdrops ignored).
+- `tests/ship-check-ui.test.mjs` — 6 tests for rules 6 and 7 (new file).
+- `docs/UX-STANDARDS.md` — new §8 "Forms, sheets, and shared UI state": 8.1 hidden wins,
+  8.2 full-width phone sheets, 8.3 info-first "New" forms, 8.4 one owner per UI state,
+  8.5 sibling tabs share components, 8.6 labels fit in every language.
+- `docs/APP-ARCHETYPES.md` — Management archetype: create-flow rule (refs §8.3).
+- `docs/patterns/MIGRATIONS.md` — "Order-safe one-time migrations" section.
+- `docs/patterns/POST-CHANGE-SWEEP.md` — the repeatable sweep method (scope, static checks,
+  risky seams, headless phone smoke test with seed-before-first-load, report-before-fix,
+  fix/re-verify/ship with sha-gated atomic commit, feed lessons back) (new file).
+- `CLAUDE.md` — §8 summary in the binding UX list; sweep reference; ship-check steps 2–3
+  extended (sheet modes + full width; no label wrap in either language).
+- `TEST-CHECKLIST.md` — new "Forms, sheets, and shared UI state" section.
+- `.ai/ACTIVE_TASK.md` — this tracker.
 
 ## Files that MUST NOT change
 
-- Application demo source: `js/**`, `css/**`, `index.html`, `sw.js`, `manifest.json`, `icons/**`, `firebase/**`
-- Existing governance, templates, UX standards, and the `khub-check.mjs` ship check
-
-## Next step if interrupted
-
-Implementation is committed. Confirm the encoding-check workflow runs green on the next push. The same guard (`scripts/check-encoding.mjs` + `.github/workflows/encoding-check.yml`) is being rolled out to the suite apps (Talk-Arrangements-Public, note-clip, ministry-tracker-, Overtime-Tracker-).
-
-## Stop condition
-
-Stop once the guard script, its test, the CI workflow, and the npm wiring are committed, the repo scan is clean, and this tracker matches the repo. **Reached.**
+- Demo app JS, `index.html`, `sw.js`, `manifest.json`, `icons/**`, `firebase/**`
+  (the only CSS change is the reset rule and removal of its four duplicates).
 
 ## Verification completed
 
-- [x] `node scripts/check-encoding.mjs .` reports clean on the full repo.
-- [x] `node --test tests/*.test.mjs` passes (17/17), including the new encoding tests.
-- [x] Scanner flags C1 control code points and U+FFFD; ignores legit emoji/accents.
-- [x] Guard runs with zero dependencies (works in app repos without package.json).
-- [x] No demo app source changed.
+- [x] `node --test tests/*.test.mjs` — 23/23 pass (17 existing + 6 new).
+- [x] `node scripts/khub-check.mjs .` — PASS WITH WARNINGS (only the expected
+      placeholder-icon warning; new rules pass on the boilerplate).
+- [x] Rules validated on real history: Ministry `04973d5` (pre-fix) → rule 6 FAIL +
+      rule 7 WARN `.rv-dialog`; Ministry `180aa7c` (fixed) → rule 7 clear, rule 6 still
+      FAIL (Ministry only has the dialog-scoped `[hidden]` rule, not the global one).
+- [x] Boilerplate loaded headless at 430px: update notice, error boundary and bottom nav
+      stay hidden (`display:none`); no page errors.
+- [x] `node scripts/check-encoding.mjs .` — clean (73 files).
+- [x] Prettier clean on every file touched, except `css/main.css`, which was already
+      unformatted on `main` and was left unreformatted to keep this diff minimal.
+
+## Known pre-existing issues (not caused by this change)
+
+- `npm run format:check` fails on `main` (20 files unformatted before this session).
+- ESLint reports a parse error on `scripts/khub-check.mjs` (config lacks `sourceType:
+module` for `.mjs`); `npm run lint` does not cover `scripts/`.
+
+## Next step if interrupted
+
+Implementation is complete. Awaiting Supervisor review. Optional follow-up (not approved
+yet): roll the global `[hidden]` reset into the suite apps — Ministry would currently fail
+rule 6.
+
+## Stop condition
+
+Stop once the docs, ship-check rules, tests and CSS reset are committed, checks pass, and
+this tracker matches the repo. **Reached.**
 
 ## Last updated
 
-- **2026-09-01 EDT** by Claude (Cowork)
+- **2026-09-25 EDT** by Claude
 
 ---
 
@@ -72,7 +118,7 @@ Stop once the guard script, its test, the CI workflow, and the npm wiring are co
 
 > **Only the Supervisor (David) edits this section. Workers never self-approve.**
 
-- **Review status:** APPROVED
-- **Reviewed by:** David Fontenelle (Supervisor)
-- **Reviewed at:** 2026-09-01 EDT
-- **Observations / required changes:** Approved. Zero-dependency encoding guard, its test, the CI workflow, and npm wiring are in; encoding regressions now fail the build. Same guard rolled out to all four suite apps. No demo app source touched.
+- **Review status:** PENDING
+- **Reviewed by:**
+- **Reviewed at:**
+- **Observations / required changes:**

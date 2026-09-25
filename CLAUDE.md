@@ -51,6 +51,14 @@ See `docs/AI-SESSION-CONTINUITY-STANDARD.md`.
 - One page title and one primary action per screen; max two prominent secondary actions.
 - Save/sync status uses the shared vocabulary in UX-STANDARDS §7, shown as text + chip,
   never color alone, announced via a targeted live region.
+- Forms, sheets and shared state (UX-STANDARDS §8): keep the global
+  `[hidden] { display: none !important; }` reset; phone sheets set `max-width:100%`
+  with `width:100%`; "New …" forms are info-first (name → phone → address →
+  schedule → optional details) with record actions only after save, and saving a new
+  record opens its card; one module owns each piece of UI state; sibling tabs share
+  header and filter components; short labels fit on one line in every language.
+- After a batch of changes, run the Post-Change Sweep (`docs/patterns/POST-CHANGE-SWEEP.md`)
+  and report findings before fixing.
 
 ## House finish (from KHub-Boilerplate)
 
@@ -72,7 +80,10 @@ See `docs/AI-SESSION-CONTINUITY-STANDARD.md`.
 
 1. Open the app. No console errors. Error boundary present.
 2. Open every view, tab, and modal. Each renders real content, not a blank or white screen.
-3. Dark and light both render. Language toggle works.
+   Open every sheet in each of its modes (new / view / edit): a "New" form shows no
+   record actions, and on a phone viewport the sheet spans the full width.
+3. Dark and light both render. Language toggle works, and no tab, filter or button
+   label wraps to a second line in either language.
 4. Installs as a PWA and serves clean from GitHub Pages.
 5. Design conformance: tokens only, unified radii, no mixed sharp and rounded edges,
    components match the KHub library, motion and polish present.

@@ -255,6 +255,43 @@ if (smallInputs.length && !hasMobileInputOverride)
     `Inputs under 16px zoom iPhone Safari on focus: ${smallInputs.slice(0, 3).join('; ')}${smallInputs.length > 3 ? ' (+' + (smallInputs.length - 3) + ' more)' : ''}. Add a 16px override under 680px.`
   );
 
+// ---- 6. [hidden] must win (UX-STANDARDS §8) ----
+// A component rule like `.panel{display:flex}` beats the browser's [hidden]
+// default, so JS-hidden panels stay visible. Require the global reset.
+if (csses.length || inlineCss.trim()) {
+  // must be a GLOBAL rule (selector list contains bare `[hidden]`), not a scoped one
+  let hasHiddenReset = false;
+  const hidRe = /([^{}]+)\{([^{}]*)\}/g;
+  let hm;
+  while ((hm = hidRe.exec(css)) !== null) {
+    const sels = hm[1].split(',').map((x) => x.trim());
+    if (sels.includes('[hidden]') && /display:\s*none\s*!important/.test(hm[2]))
+      hasHiddenReset = true;
+  }
+  if (!hasHiddenReset)
+    FAIL(
+      'Missing global `[hidden] { display: none !important; }` reset. Without it, any display rule overrides the hidden attribute (UX-STANDARDS §8).'
+    );
+}
+
+// ---- 7. full-width <dialog> sheets need max-width:100% (UX-STANDARDS §8) ----
+// Browsers cap <dialog> at max-width: calc(100% - 2em - 6px); width:100% alone
+// leaves a ~38px gap on phones.
+const shortSheets = [];
+const dlgRuleRe = /([^{}]+)\{([^{}]*)\}/g;
+let dm;
+while ((dm = dlgRuleRe.exec(css)) !== null) {
+  const sel = dm[1].trim(),
+    body = dm[2];
+  if (!/dialog|sheet/i.test(sel) || /::backdrop/.test(sel)) continue;
+  if (/(^|;|\s)width:\s*100(%|vw)/.test(body) && !/max-width:\s*(100%|100vw|none)/.test(body))
+    shortSheets.push(sel.slice(0, 48));
+}
+if (shortSheets.length)
+  WARN(
+    `Dialog/sheet set to width:100% without max-width:100% stops short on phones: ${shortSheets.slice(0, 3).join('; ')}. Add max-width:100% (UX-STANDARDS §8).`
+  );
+
 // ---- report ----
 const line = '-'.repeat(56);
 console.log(line);

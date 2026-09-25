@@ -145,6 +145,10 @@ body {
   min-height: 100dvh;
 }
 img, svg { display: block; max-width: 100%; }
+/* The hidden attribute must always win. Any component rule that sets display
+   (flex, grid, block) otherwise overrides the browser's [hidden] default and
+   shows elements JS meant to hide. See docs/UX-STANDARDS.md §8. */
+[hidden] { display: none !important; }
 button { cursor: pointer; font: inherit; border: none; background: none; }
 a { color: var(--color-primary); text-decoration-skip-ink: auto; }
 
@@ -214,7 +218,6 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
   color: var(--color-on-primary);
   font-size: var(--text-sm);
 }
-.update-notice[hidden] { display: none; }
 
 /* ── Error boundary ──────────────────────────────────────────── */
 .error-boundary {
@@ -225,7 +228,6 @@ a { color: var(--color-primary); text-decoration-skip-ink: auto; }
   border-radius: var(--radius-lg);
   color: var(--color-error);
 }
-.error-boundary[hidden] { display: none; }
 
 /* ── Welcome screen ──────────────────────────────────────────── */
 .welcome-screen {
