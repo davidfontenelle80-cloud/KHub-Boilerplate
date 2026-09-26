@@ -39,7 +39,13 @@ See `docs/AI-SESSION-CONTINUITY-STANDARD.md`.
   All inputs ≥16px font-size, always.
 - Navigation: classify every control (Destination / Primary action / Utility / Destructive).
   Max five destinations in mobile persistent navigation. Utilities don't get nav slots.
+- No responsive navigation dead zones (UX-STANDARDS §9): if phone navigation is hidden,
+  tablet/desktop navigation is already visible. Test breakpoints at -1 / exact / +1, tablet
+  portrait + landscape, safe areas, and first-viewport visibility.
 - Imports/restores follow the 9-step contract — never overwrite data right after file selection.
+  Import-heavy apps also follow `docs/patterns/IMPORT-PIPELINE.md`: canonical headers,
+  documented aliases, positive legacy-format signatures, previewed mappings, and no fixed
+  row/column assumptions outside a named legacy adapter.
 - Offline: runtime dependencies are precached or self-hosted; cold offline launch must
   complete the app's main task; bump `CACHE_VERSION` when precache contents change.
 - SW: keep one `js/sw-manager.js`; use a unique app cache prefix, document-only offline
@@ -51,14 +57,24 @@ See `docs/AI-SESSION-CONTINUITY-STANDARD.md`.
 - One page title and one primary action per screen; max two prominent secondary actions.
 - Save/sync status uses the shared vocabulary in UX-STANDARDS §7, shown as text + chip,
   never color alone, announced via a targeted live region.
+- Local-first persistence (UX-STANDARDS §12): normal user saves commit locally before cloud
+  sync unless the README deliberately declares the app server-authoritative. Remote failure
+  never erases a successful local save; every sync-enabled collection documents conflict rules.
+- Map-backed apps follow `docs/patterns/MAPS-LOCATION.md`: address OR pin is valid, GPS is
+  optional, keep one map instance, diff markers by stable ID, preserve viewport, and never
+  geocode continuously during pan/zoom. Perceived map lag is a defect.
 - Forms, sheets and shared state (UX-STANDARDS §8): keep the global
   `[hidden] { display: none !important; }` reset; phone sheets set `max-width:100%`
   with `width:100%`; "New …" forms are info-first (name → phone → address →
   schedule → optional details) with record actions only after save, and saving a new
   record opens its card; one module owns each piece of UI state; sibling tabs share
   header and filter components; short labels fit on one line in every language.
+- Build gates are binding (`docs/patterns/BUILD-GATES.md`): shell → data contract → core
+  workflow → device stabilization → optional services → release. If a gate fails, stop adding
+  dependent features and fix that layer first.
 - After a batch of changes, run the Post-Change Sweep (`docs/patterns/POST-CHANGE-SWEEP.md`)
-  and report findings before fixing.
+  and report findings before fixing. The sweep includes phone, tablet portrait, tablet landscape,
+  desktop, breakpoint-boundary probes, and installed-PWA checks when relevant.
 
 ## House finish (from KHub-Boilerplate)
 
@@ -81,10 +97,12 @@ See `docs/AI-SESSION-CONTINUITY-STANDARD.md`.
 1. Open the app. No console errors. Error boundary present.
 2. Open every view, tab, and modal. Each renders real content, not a blank or white screen.
    Open every sheet in each of its modes (new / view / edit): a "New" form shows no
-   record actions, and on a phone viewport the sheet spans the full width.
+   record actions, and on a phone viewport the sheet spans the full width. Repeat the primary
+   workflow on tablet portrait + landscape and confirm destination navigation is immediately visible.
 3. Dark and light both render. Language toggle works, and no tab, filter or button
    label wraps to a second line in either language.
-4. Installs as a PWA and serves clean from GitHub Pages.
+4. Installs as a PWA and serves clean from GitHub Pages. If manifest/icons/SW/safe-area
+   behavior changed, verify the previously installed version updates correctly on the target device.
 5. Design conformance: tokens only, unified radii, no mixed sharp and rounded edges,
    components match the KHub library, motion and polish present.
 6. App icons are THIS app's own icons. The boilerplate icon set is a placeholder and
@@ -92,7 +110,9 @@ See `docs/AI-SESSION-CONTINUITY-STANDARD.md`.
    (a photo, drawing, or image works), then generate the full set from it:
    icon-72 / 96 / 128 / 144 / 152 / 192 / 384 / 512 (192 and 512 maskable),
    apple-touch-icon.png, and favicon.svg. The manifest must point at them.
-   khub-check warns when icon-192.png is still the placeholder.
+   khub-check warns when icon-192.png is still the placeholder. When identity assets change,
+   verify the actual installed icon on iOS/Android: no unexpected crop, white box, recoloring,
+   letterboxing, or mismatch with the source artwork.
 7. Fix every fail before shipping. Deliver one clean working build.
 
 ## How to run the static part of the check
