@@ -69,6 +69,10 @@ section of `ACTIVE_TASK.md`. Full detail in [`CONTRIBUTING_AI.md`](CONTRIBUTING_
 | Push notifications (closed-app reminders)                                     | `docs/notifications/NOTIFICATIONS.md` + `docs/notifications/reference/` |
 | UX standards (modes, viewport/zoom, navigation, layout, data safety, offline) | `docs/UX-STANDARDS.md`                                                  |
 | App archetypes (tracker, calculator, management, finance)                     | `docs/APP-ARCHETYPES.md`                                                |
+| Build/stabilization gates                                                     | `docs/patterns/BUILD-GATES.md`                                         |
+| Header-driven import pipeline                                                 | `docs/patterns/IMPORT-PIPELINE.md`                                     |
+| Maps/location lifecycle + performance                                         | `docs/patterns/MAPS-LOCATION.md`                                       |
+| Post-change device/regression sweep                                           | `docs/patterns/POST-CHANGE-SWEEP.md`                                   |
 
 ---
 
@@ -292,15 +296,21 @@ The service worker sets `start_url: "./"` and uses a relative scope — works at
 
 ## Making a new app from this boilerplate
 
-0. Read `docs/UX-STANDARDS.md` and `docs/APP-ARCHETYPES.md` — declare the app's archetype and layout mode in its README
+0. Read `docs/UX-STANDARDS.md`, `docs/APP-ARCHETYPES.md`, and
+   `docs/patterns/BUILD-GATES.md`; declare archetype, layout mode, device priority,
+   zoom policy, primary task, storage key, and optional services in the app README
 1. Fork / clone
 2. Update identity fields (`config.js`, `manifest.json`, `index.html`)
-3. Replace icons
+3. Replace icons with the app's real artwork
 4. Remove demo section
-5. Build your app's views/modules in `js/`
-6. Add new JS files to `PRECACHE_URLS` in `sw.js` and bump `CACHE_VERSION`
-7. Run `npm run check` before every push
-8. Enable GitHub Pages
+5. Pass the shell gate before domain feature work
+6. Define the canonical data contract, identity keys, persistence, migration, and recovery rules
+7. Build the shortest complete core workflow in `js/`
+8. Stabilize phone, tablet portrait, tablet landscape, desktop, and installed-PWA behavior
+9. Only then add optional sync/import/maps/notifications; read the matching pattern docs first
+10. Add new JS files to `PRECACHE_URLS` in `sw.js` and bump `CACHE_VERSION`
+11. Run `npm run check` and the Post-Change Sweep before release
+12. Enable GitHub Pages
 
 ---
 
