@@ -22,8 +22,8 @@
 
 ## Status
 
-- **Status:** IN PROGRESS
-- **% complete:** 15%
+- **Status:** READY FOR REVIEW
+- **% complete:** 100% of implementation
 - **Confidence:** 95%
 
 ## Objective & task
@@ -35,9 +35,8 @@
   build/stabilization gates, responsive tablet navigation, map/location lifecycle and performance,
   resilient spreadsheet schema mapping, local-first sync behavior, installed-PWA visual identity
   verification, and a broader release/device regression matrix.
-- **Last completed step:** Audited existing README, CLAUDE rules, UX standards, test checklist,
-  import/migration patterns, and post-change sweep to avoid duplicating standards already added
-  on 2026-09-25.
+- **Last completed step:** Standards edits are complete, branch consistency verified, and PR #1
+  opened against `main` for Supervisor review.
 
 ## Background (why)
 
@@ -78,13 +77,17 @@ in one app:
 - `icons/**`, `firebase/**`, environment files, package files, test code, and ship-check code
   unless a later Supervisor instruction explicitly expands scope.
 
-## Verification plan
+## Verification completed
 
-- Re-fetch every changed Markdown file from the branch after writes.
-- Confirm every new internal Markdown link points to a file that exists on the branch.
-- Confirm no runtime/code files changed.
-- Review the PR diff for duplication or conflicting instructions.
-- Mark this task `READY FOR REVIEW`; workers do not self-approve.
+- [x] Re-fetched every changed Markdown file from the branch after writes.
+- [x] Confirmed new pattern docs and referenced standards files exist on the branch.
+- [x] Confirmed binding markers appear in UX standards, CLAUDE rules, README, and test checklist.
+- [x] Compared `main` to the branch: 9 changed files, all documentation/governance only.
+- [x] No runtime JS/CSS, `sw.js`, `manifest.json`, icons, Firebase, packages, test code, or ship-check code changed.
+- [x] PR #1 opened: `Harden KHub standards from weekly build lessons`.
+- [x] New standards cover build gates, tablet navigation, map lifecycle/performance,
+      resilient header-driven imports, local-first sync, installed-PWA identity, and the
+      broader device regression matrix.
 
 ## Known pre-existing issues
 
@@ -94,12 +97,14 @@ in one app:
 
 ## Next step if interrupted
 
-Continue the standards-only edits listed above, then re-fetch and review the complete branch diff.
+Implementation is complete. Await Supervisor review of PR #1. If changes are requested, make
+only those scoped revisions on this branch, re-run the same consistency checks, and return to
+`READY FOR REVIEW`.
 
 ## Stop condition
 
 Stop after the focused standards changes are committed on the branch, verified for consistency,
-a PR is opened against `main`, and this tracker is updated to `READY FOR REVIEW`.
+a PR is opened against `main`, and this tracker is updated to `READY FOR REVIEW`. **Reached.**
 
 ## Last updated
 
