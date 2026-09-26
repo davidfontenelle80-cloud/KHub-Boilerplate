@@ -305,3 +305,107 @@ every shipped language at 390px width. Spanish runs ~30% longer than English.
 Prefer a shorter translation for the control ("Estudios") and keep the full
 term in the section heading ("Estudios bíblicos"). Check with the language
 toggle on a phone viewport as part of the ship check.
+
+
+---
+
+## 9. Responsive navigation and first viewport
+
+Responsive navigation may change form across breakpoints, but it must never disappear.
+
+- At every supported width, at least one primary destination control is visible and usable.
+- If a phone bottom nav is hidden at a breakpoint, the tablet/desktop replacement is visible
+  at that same breakpoint or earlier. There is no "dead zone" where both are hidden.
+- Tablet layouts cannot depend on hover.
+- Fixed bottom navigation includes the device safe-area inset and must not cover content,
+  sheets, map controls, or primary actions.
+- Test each breakpoint one pixel below, at, and one pixel above the breakpoint.
+- Test tablet portrait and landscape separately.
+- On first render, the current context and primary action or primary choices are visible
+  without requiring a scroll merely to make controls appear.
+- A selected tab/filter/control must render correctly immediately; scrolling must not be what
+  causes it to become visible.
+
+Reference: `docs/patterns/BUILD-GATES.md`.
+
+---
+
+## 10. Maps and location
+
+Map-backed apps follow `docs/patterns/MAPS-LOCATION.md`.
+
+Binding rules:
+
+- A saved location may be a street address, a pin (latitude/longitude), or both.
+- GPS is optional; typed address and manual pin remain available when permission is denied.
+- Raw coordinates are stored internally but are not the normal user-facing label.
+- Mount one live map instance and reuse it; do not recreate the map during pan/zoom or ordinary
+  UI re-renders.
+- Markers use stable record IDs and are diffed (add/update/remove) instead of rebuilt wholesale.
+- Geocoding is debounced; reverse geocoding never runs continuously during drag/zoom.
+- Saving a pin does not wait for reverse geocoding.
+- User pan/zoom is preserved until an explicit recenter/show-all action.
+- Saved records remain accessible if tiles or geocoding are unavailable.
+
+Perceived map lag is a functional defect, not merely cosmetic polish.
+
+---
+
+## 11. Resilient import mapping
+
+The nine-step data-safety contract in §4 is mandatory, and import-heavy apps also follow
+`docs/patterns/IMPORT-PIPELINE.md`.
+
+- Recognize spreadsheet fields by canonical headers, documented aliases, or a positively
+  identified versioned legacy adapter — never by row/column position alone.
+- Reordered columns must import the same meaning.
+- Unknown columns cannot shift positional parsing.
+- Missing required fields block Apply; missing optional fields warn.
+- Ambiguous mappings are shown for user confirmation instead of silently fuzzy-matched.
+- The preview shows source sheet/table, source-column → canonical-field mapping, record counts,
+  conflicts, skipped columns, and per-collection policy.
+- Duplicate detection uses a stable domain identity key, never row number.
+- If multiple sheets are plausible, use a documented signature or ask the user to choose.
+
+A known legacy workbook may use fixed ranges only inside a named adapter that first proves the
+source matches that legacy format.
+
+---
+
+## 12. Local-first persistence and cloud sync
+
+For apps whose data is user-owned and can function locally, the local store is the immediate
+source of continuity. Cloud sync is a secondary transport, not a prerequisite for pressing Save.
+
+- A normal user save commits locally first.
+- The UI may show **Saved locally** while remote work continues as **Syncing…**.
+- Network failure does not roll back a successful local save.
+- Failed remote work is retried deterministically without creating duplicate domain effects.
+- The app remains usable offline for the primary task when §5 requires offline operation.
+- Every sync-enabled collection documents its conflict policy (for example revision-based,
+  last-write-wins with timestamps, or explicit conflict review).
+- Backup-only behavior must not be presented as live sync.
+- Destructive remote changes require the same explicit user intent and recovery posture as local
+  destructive changes.
+
+An app may be server-authoritative only when that is a deliberate product requirement documented
+in its README.
+
+---
+
+## 13. Installed PWA visual identity
+
+Passing manifest validation is not enough. The installed app must visually look like the app
+the user expects.
+
+- Replace every boilerplate icon before release.
+- Keep important artwork inside the safe region used by maskable icons.
+- `apple-touch-icon.png` uses an intentional background; do not rely on transparent pixels
+  rendering consistently across iOS versions.
+- Verify the actual home-screen/app-library icon on target iOS and Android devices when icon or
+  manifest assets change.
+- Verify splash/launch background, status-bar/theme color, standalone mode, and icon cropping.
+- Unexpected recoloring, white boxes, clipping, letterboxing, or a different-looking installed
+  icon is a release defect even if all icon files return HTTP 200.
+
+Record installed-device verification in the release evidence when identity assets changed.

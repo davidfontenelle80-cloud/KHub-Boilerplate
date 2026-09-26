@@ -36,6 +36,10 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] App icon shows "K" lettermark correctly on home screen
 - [ ] Splash screen uses `background_color` from manifest (white/dark)
 - [ ] `theme-color` tints the status bar on Android
+- [ ] On an actual iOS install, the home-screen/app-library icon matches the intended artwork
+- [ ] On an actual Android install, the launcher icon is not unexpectedly cropped, recolored, boxed, or letterboxed
+- [ ] `apple-touch-icon.png` has an intentional background and does not depend on transparency rendering consistently
+- [ ] 192px/512px maskable icons keep important artwork inside the safe region
 
 ---
 
@@ -183,6 +187,12 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] Text does not overflow containers at any size
 - [ ] Touch targets (44px) pass on phone viewport
 - [ ] Header controls (lang + theme toggles) visible at all widths
+- [ ] Tablet portrait: primary destination navigation is immediately visible and usable
+- [ ] Tablet landscape: primary destination navigation is immediately visible and usable
+- [ ] No navigation dead zone: test each responsive breakpoint at breakpoint - 1, breakpoint, and breakpoint + 1
+- [ ] Fixed bottom navigation respects `env(safe-area-inset-bottom)` and does not cover primary actions
+- [ ] First viewport shows current context plus the primary action/choices without requiring a scroll to reveal them
+- [ ] Selected tabs/filters render correctly before any scroll event
 
 ---
 
@@ -193,6 +203,7 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] Safari (desktop) — service worker, manifest
 - [ ] Chrome (Android) — install to home screen, standalone mode
 - [ ] Safari (iOS) — Add to Home Screen, standalone mode
+- [ ] Safari (iPadOS) — installed/standalone navigation in portrait + landscape
 - [ ] Edge (desktop) — install prompt, layout
 
 ---
@@ -240,3 +251,54 @@ Check every item in every section. If anything fails, fix before shipping.
 - [ ] Sibling tabs use the same header and filter components
 - [ ] With the language toggled, no tab, filter, chip, or button label wraps at 390px width
 - [ ] One-time migrations tested with legacy data seeded **before** first load, and re-running them changes nothing
+
+
+---
+
+## Data import and sync
+
+- [ ] Import parser does not mutate live state before explicit Apply
+- [ ] Spreadsheet mapping is header/alias driven; reordering columns does not change meaning
+- [ ] Unknown extra columns do not shift positional parsing
+- [ ] Missing required fields block Apply with a clear error
+- [ ] Missing optional fields warn and use documented defaults
+- [ ] Ambiguous source headers require user confirmation; no silent fuzzy mapping
+- [ ] Preview shows source sheet/table and source-column → canonical-field mapping
+- [ ] Duplicate detection uses the documented domain identity key, not row number
+- [ ] Re-importing the same file follows the declared deterministic merge/replace policy
+- [ ] Oldest supported legacy workbook is recognized only by a positive version/signature check
+- [ ] Reordered-column, extra-column, alias, missing-field, blank-row, duplicate, and legacy-source tests pass
+- [ ] Normal Save commits locally before cloud sync unless the README explicitly declares the app server-authoritative
+- [ ] Remote sync failure leaves successful local data intact and shows `Sync failed`
+- [ ] Retry does not create duplicate domain effects
+- [ ] Every sync-enabled collection documents its conflict policy
+- [ ] Backup-only behavior is not presented as live sync
+
+---
+
+## Maps and location
+
+- [ ] A location can be saved with address, pin coordinates, or both
+- [ ] Denying GPS does not block typed-address or manual-pin workflows
+- [ ] Raw latitude/longitude is not the normal user-facing label
+- [ ] Map instance mounts once and is not recreated during pan/zoom
+- [ ] Marker updates are diffed by stable record ID rather than full rebuilds
+- [ ] No continuous geocoding/reverse-geocoding during map drag or zoom
+- [ ] Pin save completes without waiting for reverse geocoding
+- [ ] User viewport survives ordinary marker/filter updates
+- [ ] Opening/closing a record sheet does not unexpectedly recenter the map
+- [ ] Phone/tablet rotation resizes the existing map without blank/clipped output
+- [ ] Saved records remain usable if tile/geocoder network calls fail
+
+---
+
+## Build and release gates
+
+- [ ] README declares archetype, layout mode, device priority, zoom policy, primary task, storage key, and optional services
+- [ ] Shell gate passed before major domain feature work
+- [ ] Canonical data shape, identity keys, import/migration rules, and recovery behavior are documented before several screens depend on them
+- [ ] Core create/view/edit/persist/reload workflow passes before secondary features are layered on
+- [ ] Device stabilization passes phone, tablet portrait, tablet landscape, desktop, and installed-PWA checks relevant to the app
+- [ ] Optional services (sync/import/maps/notifications) were added only after the core workflow was stable
+- [ ] A failed gate stopped dependent feature expansion until fixed
+- [ ] Repeated or KHub-owned bug classes were promoted back into standards/checklists instead of copied as one-off patches

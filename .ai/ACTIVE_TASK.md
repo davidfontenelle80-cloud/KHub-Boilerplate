@@ -12,12 +12,13 @@
 
 ## Session / worker identity
 
-- **Worker:** Claude acting for Supervisor **David Fontenelle**
-- **Model:** Claude Opus 5.5
-- **Session started:** 2026-09-25 EDT
+- **Worker:** ChatGPT GPT-5.6 Sol acting for Supervisor **David Fontenelle**
+- **Session started:** 2026-09-26 EDT
 - **Supervisor:** David Fontenelle
-- **Previous task:** Encoding guard — APPROVED 2026-09-01 (commits `de0e9b8`, `065c20d`).
-  Repo matched that record at session start.
+- **Branch:** `standards/weekly-build-lessons-2026-09-26`
+- **Previous task:** 2026-09-25 Ministry Tracker standards pass is still recorded as
+  `READY FOR REVIEW` on `main`. This new task is a direct Supervisor-requested follow-up;
+  it does not imply approval of that prior review item.
 
 ## Status
 
@@ -27,90 +28,87 @@
 
 ## Objective & task
 
-- **Current objective:** Turn the lessons from the 2026-09-25 Ministry Tracker post-change
-  sweep into KHub standards, so every app inherits them — including how the sweep itself
-  was done.
-- **Current task:** Standards docs, ship-check rules with tests, and the starter CSS reset.
-  Approved by David 2026-09-25 as proposed: boilerplate only (no roll-out to suite apps
-  yet); rule 6 (`[hidden]` reset) FAILS, rule 7 (short dialog sheet) WARNS.
-- **Last completed step:** All files written, formatted, and verified (below).
+- **Current objective:** Fold the remaining lessons from this week's KHub app builds into the
+  boilerplate instructions so future apps inherit the fixes before implementation rather than
+  discovering them after deployment.
+- **Current task:** Standards/documentation only. Add the reusable rules that are still missing:
+  build/stabilization gates, responsive tablet navigation, map/location lifecycle and performance,
+  resilient spreadsheet schema mapping, local-first sync behavior, installed-PWA visual identity
+  verification, and a broader release/device regression matrix.
+- **Last completed step:** Standards edits are complete, branch consistency verified, and PR #1
+  opened against `main` for Supervisor review.
 
 ## Background (why)
 
-A sweep of 11 same-day Ministry Tracker commits found, and David approved fixes for:
+This week's app work exposed recurring issues that belong in the platform standard rather than
+in one app:
 
-1. Phone bottom sheets 38px short on the right — `<dialog>` UA `max-width` cap with
-   `width:100%` (Ministry v93).
-2. Notes tab jumping back to Return Visits — two modules each tracking the active tab (v93).
-3. Spanish tab label wrapping (v93).
-4. Return Visits header built differently from its sibling tabs (v93).
-5. New Return Visit showing the empty action panel (Directions/Call/Log/Share…) above the
-   Name/Phone/Address form — `.rv-visit-view{display:flex}` overriding `[hidden]`; plus
-   David's requested flow: info first, actions after save, new record opens its card (v94).
+1. Tablet navigation can disappear or become inaccessible when a phone bottom-nav is hidden
+   before a tablet/desktop replacement is visible.
+2. Map screens become sluggish when the map or all markers are rebuilt during pan/zoom or when
+   geocoding runs on every interaction.
+3. Rural use cases need a saved pin even when no useful street address exists; raw coordinates
+   are implementation data, not normal user-facing content.
+4. Spreadsheet imports must adapt to column headers/aliases and sheet names rather than fixed
+   row/column positions.
+5. Cloud-enabled apps should remain local-first: user saves should complete locally and sync
+   separately with visible status and deterministic conflict rules.
+6. Installed icons can technically pass manifest checks yet render differently on iOS/Android;
+   actual installed visual identity must be verified.
+7. A phone-only smoke test is insufficient for apps used on iPad/tablet and desktop.
+8. Feature growth should pause at defined stabilization gates so shell/data/device problems are
+   fixed before more product features are layered on top.
 
-Ministry commits: `b81eb72` (v93), `180aa7c` (v94).
+## Files expected to change
 
-## Files changed this session
-
-- `css/main.css` — global `[hidden] { display: none !important; }` in the reset; removed the
-  now-redundant `.update-notice[hidden]` / `.error-boundary[hidden]` one-offs.
-- `css/components.css` — removed the same two redundant one-offs.
-- `scripts/khub-check.mjs` — rule 6: FAIL without a GLOBAL `[hidden]` reset (a scoped
-  `.x [hidden]` does not count); rule 7: WARN on a `dialog`/`sheet` rule with `width:100%`
-  and no `max-width:100%` (backdrops ignored).
-- `tests/ship-check-ui.test.mjs` — 6 tests for rules 6 and 7 (new file).
-- `docs/UX-STANDARDS.md` — new §8 "Forms, sheets, and shared UI state": 8.1 hidden wins,
-  8.2 full-width phone sheets, 8.3 info-first "New" forms, 8.4 one owner per UI state,
-  8.5 sibling tabs share components, 8.6 labels fit in every language.
-- `docs/APP-ARCHETYPES.md` — Management archetype: create-flow rule (refs §8.3).
-- `docs/patterns/MIGRATIONS.md` — "Order-safe one-time migrations" section.
-- `docs/patterns/POST-CHANGE-SWEEP.md` — the repeatable sweep method (scope, static checks,
-  risky seams, headless phone smoke test with seed-before-first-load, report-before-fix,
-  fix/re-verify/ship with sha-gated atomic commit, feed lessons back) (new file).
-- `CLAUDE.md` — §8 summary in the binding UX list; sweep reference; ship-check steps 2–3
-  extended (sheet modes + full width; no label wrap in either language).
-- `TEST-CHECKLIST.md` — new "Forms, sheets, and shared UI state" section.
-- `.ai/ACTIVE_TASK.md` — this tracker.
+- `docs/UX-STANDARDS.md`
+- `docs/patterns/IMPORT-PIPELINE.md`
+- `docs/patterns/POST-CHANGE-SWEEP.md`
+- `docs/patterns/BUILD-GATES.md` (new)
+- `docs/patterns/MAPS-LOCATION.md` (new)
+- `TEST-CHECKLIST.md`
+- `CLAUDE.md`
+- `README.md`
+- `.ai/ACTIVE_TASK.md`
 
 ## Files that MUST NOT change
 
-- Demo app JS, `index.html`, `sw.js`, `manifest.json`, `icons/**`, `firebase/**`
-  (the only CSS change is the reset rule and removal of its four duplicates).
+- Demo/runtime app code: `index.html`, `js/**`, `css/**`, `sw.js`, `manifest.json`
+- `icons/**`, `firebase/**`, environment files, package files, test code, and ship-check code
+  unless a later Supervisor instruction explicitly expands scope.
 
 ## Verification completed
 
-- [x] `node --test tests/*.test.mjs` — 23/23 pass (17 existing + 6 new).
-- [x] `node scripts/khub-check.mjs .` — PASS WITH WARNINGS (only the expected
-      placeholder-icon warning; new rules pass on the boilerplate).
-- [x] Rules validated on real history: Ministry `04973d5` (pre-fix) → rule 6 FAIL +
-      rule 7 WARN `.rv-dialog`; Ministry `180aa7c` (fixed) → rule 7 clear, rule 6 still
-      FAIL (Ministry only has the dialog-scoped `[hidden]` rule, not the global one).
-- [x] Boilerplate loaded headless at 430px: update notice, error boundary and bottom nav
-      stay hidden (`display:none`); no page errors.
-- [x] `node scripts/check-encoding.mjs .` — clean (73 files).
-- [x] Prettier clean on every file touched, except `css/main.css`, which was already
-      unformatted on `main` and was left unreformatted to keep this diff minimal.
+- [x] Re-fetched every changed Markdown file from the branch after writes.
+- [x] Confirmed new pattern docs and referenced standards files exist on the branch.
+- [x] Confirmed binding markers appear in UX standards, CLAUDE rules, README, and test checklist.
+- [x] Compared `main` to the branch: 9 changed files, all documentation/governance only.
+- [x] No runtime JS/CSS, `sw.js`, `manifest.json`, icons, Firebase, packages, test code, or ship-check code changed.
+- [x] PR #1 opened: `Harden KHub standards from weekly build lessons`.
+- [x] New standards cover build gates, tablet navigation, map lifecycle/performance,
+      resilient header-driven imports, local-first sync, installed-PWA identity, and the
+      broader device regression matrix.
 
-## Known pre-existing issues (not caused by this change)
+## Known pre-existing issues
 
-- `npm run format:check` fails on `main` (20 files unformatted before this session).
-- ESLint reports a parse error on `scripts/khub-check.mjs` (config lacks `sourceType:
-module` for `.mjs`); `npm run lint` does not cover `scripts/`.
+- `npm run format:check` already fails on `main` because multiple files are unformatted.
+- ESLint configuration does not fully cover `.mjs` scripts.
+- These are out of scope for this documentation-only task.
 
 ## Next step if interrupted
 
-Implementation is complete. Awaiting Supervisor review. Optional follow-up (not approved
-yet): roll the global `[hidden]` reset into the suite apps — Ministry would currently fail
-rule 6.
+Implementation is complete. Await Supervisor review of PR #1. If changes are requested, make
+only those scoped revisions on this branch, re-run the same consistency checks, and return to
+`READY FOR REVIEW`.
 
 ## Stop condition
 
-Stop once the docs, ship-check rules, tests and CSS reset are committed, checks pass, and
-this tracker matches the repo. **Reached.**
+Stop after the focused standards changes are committed on the branch, verified for consistency,
+a PR is opened against `main`, and this tracker is updated to `READY FOR REVIEW`. **Reached.**
 
 ## Last updated
 
-- **2026-09-25 EDT** by Claude
+- **2026-09-26 EDT** by ChatGPT GPT-5.6 Sol
 
 ---
 
