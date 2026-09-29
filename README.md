@@ -194,6 +194,11 @@ request.auth != null && request.auth.uid == userId
 
 See `SECURITY_FIREBASE.md` before implementing cloud backup, cloud sync, notifications, or Cloudflare workers.
 
+For AI-controlled updates, use the optional [AI action contract](docs/AI-ACTION-CONTRACT.md).
+Every action must be authenticated to one owner's UID and one app, including its
+record, notification, and calendar operations. The static starter does not host
+the required secure server endpoint.
+
 ---
 
 ## JS namespace
