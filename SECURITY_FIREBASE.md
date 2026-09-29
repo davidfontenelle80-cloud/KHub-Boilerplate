@@ -69,6 +69,41 @@ Minimum test checklist:
 
 Do not approve a Firebase-backed app until this isolation test passes.
 
+## AI-controlled actions: one account per lane
+
+Any AI client (including ChatGPT Work or Muse) must act through an explicit,
+authenticated action for **one app and one account**. The AI's text, image,
+tool arguments, or a user ID supplied in a request body are untrusted input.
+
+- Verify the owner's short-lived authentication grant on the server for every
+  read and write. Derive the Firebase UID from the verified identity; never
+  accept a target UID from the AI. Bind the grant to the intended app and
+  permitted actions. Expired or revoked grants must fail closed.
+- Restrict each action to `/khubApps/{appId}/users/{uid}/...` (or an approved
+  existing app path), including record lookup, previews, commits, backups,
+  audit records, notification tokens, and preferences. Do not scan or return
+  other users' records while resolving a name or a calendar event.
+- A server using privileged Firebase credentials bypasses Firestore Security
+  Rules. It must enforce the same UID and app boundary itself before every
+  database operation. Do not expose a generic collection/path writer.
+- Link calendar grants and stored event IDs to the same UID and app. Creating,
+  moving, or deleting a reminder must affect only that owner's calendar event
+  and notification subscriptions. A calendar connection is an additional
+  authorization, not a reason to broaden app data access.
+- If one person uses the same account on multiple devices, that account's
+  changes may sync to those devices. A different signed-in account must never
+  receive the records or notifications unless a separate, explicitly designed
+  sharing feature is approved.
+- Before activation, test two real test accounts in both directions. Try to
+  substitute the other UID, record ID, app ID, notification token, and calendar
+  event ID in preview and commit requests. All cross-account attempts must
+  fail without disclosing whether the other record exists. Also test token
+  expiration/revocation, retries, and sign-out during a preview-to-commit flow.
+
+These requirements apply even when an AI has broad access to the app's
+documented user actions. Broad action coverage is not unrestricted database
+access. See `docs/AI-ACTION-CONTRACT.md` for the starter contract.
+
 ## Notification token storage standard
 
 Notification tokens must be stored under the future KHub standard user path:
